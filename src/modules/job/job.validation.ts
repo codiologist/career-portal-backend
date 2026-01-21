@@ -28,6 +28,9 @@ export const JobTypeEnum = z.enum([
 
 export const JobSchema = z.object({
   jobUniqueId: z.string().min(1, "Job ID is required"),
+  title: z.string().min(1, "Job title is required"),     
+  slug : z.string().min(1, "Slug is required").optional(),      
+  jobRole: z.string().min(1, "Job role is required"),         
   category: z.string().min(1, "Category is required"),
   jobType: JobTypeEnum,
   salaryRange: z.string().min(1, "Salary range is required"),
@@ -53,22 +56,6 @@ export type TJobUpdateInput = z.infer<typeof jobUpdateSchema>;
 
 
 export type TJobCreateInput = z.infer<typeof JobSchema>;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

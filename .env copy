@@ -1,9 +1,0 @@
-PORT=4000
-
-NODE_ENV=development
-
-# Connect to Supabase via connection pooling   NOTE: this conniction in drecetion is not recommended for db migrations
-DATABASE_URL="postgresql://postgres.qizkllwdteqozdcwxkhm:job-portal-db@aws-1-ap-south-1.pooler.supabase.com:5432/postgres"
-
-# Direct connection to the database. Used for migrations
-# DIRECT_URL="postgresql://postgres.qizkllwdteqozdcwxkhm:job-portal-db@aws-1-ap-south-1.pooler.supabase.com:5432/postgres"

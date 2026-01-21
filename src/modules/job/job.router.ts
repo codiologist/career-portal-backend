@@ -8,7 +8,8 @@ import { JobController } from "./job.controller";
 const router = express.Router();
 
 router.post("/",  JobController.createJob);
-
+router.get('/', JobController.getAllJobs)
+router.get('/:id', JobController.getJobById)
 
 
 ////Category///

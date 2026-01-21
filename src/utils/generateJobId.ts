@@ -1,3 +1,4 @@
+import e from "express";
 import { prisma } from "../config/prisma";
 
 
@@ -25,6 +26,8 @@ export async function generateJobId(): Promise<string> {
     const parts = lastJob.jobUniqueId.split("_");
     const lastIndex = parseInt(parts[parts.length - 1], 10);
     newIndex = lastIndex + 1;
+  } else {
+    newIndex = 1;
   }
 
   const indexStr = String(newIndex).padStart(3, "0");

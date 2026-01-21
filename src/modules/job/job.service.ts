@@ -1,4 +1,6 @@
 import { prisma } from "../../config/prisma"
+import { AppError } from "../../utils/AppError"
+import { createSlug } from "../../utils/createSlug"
 import { generateJobId } from "../../utils/generateJobId"
 import { TJobCategoryInput, TJobCreateInput } from "./job.validation"
 
@@ -7,31 +9,35 @@ import { TJobCategoryInput, TJobCreateInput } from "./job.validation"
 
 const createJob = async (payload: TJobCreateInput) => {
 
-  console.log(payload)
-
-
-
   const id = await generateJobId()
-
   if (id) {
     payload.jobUniqueId = id
   } else {
-    throw new Error("Id not found")
+    throw new AppError(500, "Id not found")
   }
-
-
-  const result = prisma.job.create({
+  const result = await prisma.job.create({
     data: {
-      ...payload
+      ...payload,
+      slug: createSlug(payload.title)
     }
   })
+  return result
+}
 
 
+
+const getAllJobs = async () => {
+
+  const result = prisma.job.findMany()
 
   return result
 }
 
 
+
+
+
+//////categori ///////
 
 const createCategory = async (payload: TJobCategoryInput) => {
 
@@ -45,6 +51,17 @@ const createCategory = async (payload: TJobCategoryInput) => {
   return result
 
 }
+
+
+const getJobById = async (id: string) => {
+
+  const result = await prisma.job.findUnique({
+    where: {id}
+  })
+  return result
+}
+
+
 
 
 const getAllCategory = async () => {
@@ -62,6 +79,8 @@ const getAllCategory = async () => {
 
 export const JobService = {
   createJob,
+  getAllJobs,
   createCategory,
-  getAllCategory
+  getAllCategory, 
+  getJobById
 }

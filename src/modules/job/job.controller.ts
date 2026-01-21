@@ -21,6 +21,39 @@ const validatedData = JobSchema.parse(req.body);
 
 
 
+const getAllJobs = catchAsync(async (req, res) => {
+
+    const result = await JobService.getAllJobs()
+
+    res.status(200).json({
+        status: "success",
+        message: "Jobs Retrive reuccessfully",
+        statusCode: 200,
+        data: result
+    })
+})
+
+
+
+const getJobById = catchAsync(async (req, res) => {
+
+    const id = req.params.id;
+
+
+    const result = await JobService.getJobById(id as string)
+    res.status(200).json({
+        status: "success",
+        message: "Jobs Retrive reuccessfully",
+        statusCode: 200,
+        data: result
+    })
+})
+
+
+
+
+
+
 
 const createCategory = catchAsync(async (req, res) => {
     const validatedData = jobCategorySchema.parse(req.body);
@@ -39,9 +72,7 @@ const createCategory = catchAsync(async (req, res) => {
 
 const getAllCategory = catchAsync(async (req, res) => {
 
-
     const result = await JobService.getAllCategory()
-
     res.status(200).json({
         status: "success",
         message: "Retrive All Category sSuccessfully",
@@ -54,8 +85,10 @@ const getAllCategory = catchAsync(async (req, res) => {
 
 export const JobController = {
     createJob,
+    getAllJobs,
     createCategory, 
-    getAllCategory
+    getAllCategory, 
+    getJobById
 }
 
 

@@ -38,23 +38,23 @@ model User {
 ////// Profile //////////////////////////////
 
 model Profile {
-  id             String   @id @default(uuid())
-  avater         String?
-  dob            DateTime
-  address        String
-  country        String
-  zip            String
-  maritalStatus  Boolean
-  bio            String
-  isVerified     Boolean
-  totalExprience String
-  protfolioLint  String
-  socialLink     String[]
-  resumeUpload   String
+  id              String   @id @default(uuid())
+  avatar          String?
+  dob             DateTime
+  address         String
+  country         String
+  zip             String
+  maritalStatus   Boolean
+  bio             String
+  isVerified      Boolean
+  totalExperience String
+  portfolioLink   String?
+  socialLink      String[]
+  resumeUpload    String?
 
-  workExprience WorkExprience[]
-  education     Education[]
-  skill         String[]
+  workExperience WorkExprience[]
+  education      Education[]
+  skill          String[]
 
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -69,7 +69,7 @@ model WorkExprience {
   startDate       DateTime
 
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  profileId String  @unique
+  profileId String  
 }
 
 model Education {
@@ -80,7 +80,7 @@ model Education {
   endDate   DateTime
 
   profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  profileId String  @unique
+  profileId String 
 }
 
 ///// Profile ////////////////////
@@ -95,7 +95,10 @@ enum JobType {
 
 model Job {
   id               String   @id @default(uuid())
+  title            String
+  jobRole          String
   jobUniqueId      String   @unique
+  slug              String
   responsibilities Json
   features         Json
   requirments      Json

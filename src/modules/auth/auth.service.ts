@@ -2,6 +2,7 @@
 import jwt from 'jsonwebtoken';
 import { TUser, TUserPayload } from '../../types/user';
 import { prisma } from '../../config/prisma';
+import { TProfileInput } from './profile.validation';
 
 
 
@@ -56,10 +57,6 @@ const login = async (payload: TUser) => {
 
 
 
-
-
-
-
 const getAllUsers = async () => {
 
     const result = await prisma.user.findMany()
@@ -67,21 +64,71 @@ const getAllUsers = async () => {
 
 }
 
+
+
 const getSingleUser = async (payload: TUserPayload) => {
 
 const {email} = payload
 
     const result = await prisma.user.findUnique({
-        where: { email }
+        where: { email }, 
+        select: {
+            fullName: true,
+            email: true,
+            role: true,
+            createdAt: true,
+            profile: true,
+        }
     })
     return result
-
 }
+
+
+
+
+/////// Profile ////////
+
+const createProfile = async (payload: TProfileInput, user: TUserPayload) => {
+  const { workExperience, education, ...rest } = payload;
+
+  const result = await prisma.profile.upsert({
+    where: { userId: user.id }, // unique field
+    update: {
+      ...rest,
+      // For nested relations, you might want to replace or update existing entries
+      workExperience: {
+        deleteMany: {}, // optional: delete old entries
+        create: workExperience?.map((we) => ({ ...we })),
+      },
+      education: {
+        deleteMany: {},
+        create: education?.map((edu) => ({ ...edu })),
+      },
+    },
+    create: {
+      ...rest,
+      userId: user.id,
+      workExperience: {
+        create: workExperience?.map((we) => ({ ...we })),
+      },
+      education: {
+        create: education?.map((edu) => ({ ...edu })),
+      },
+    },
+  });
+
+  return result;
+};
+
+
+
+
 
 
 export const AuthService = {
     register,
     getAllUsers,
+    createProfile,
     getSingleUser,
     login
 }
