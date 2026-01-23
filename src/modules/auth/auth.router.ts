@@ -5,7 +5,6 @@ import express from "express";
 import { upload, uploadBystorage } from '../../utils/upload';
 
 
-
 const router = express.Router();
 
 ///// Auth /////
