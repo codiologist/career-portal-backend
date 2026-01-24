@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import jwt from 'jsonwebtoken';
-import { TUser, TUserPayload } from '../../types/user';
+import { TUser } from '../../types/user';
 import { prisma } from '../../config/prisma';
-import { TProfileInput } from './profile.validation';
 import { AppError } from '../../utils/AppError';
 import { createEmailToken } from '../../utils/createEmailToken';
 import sendEmail from '../../utils/sendEmail';
@@ -45,7 +44,7 @@ const register = async (payload: TUser) => {
     return {}
 }
 const login = async (payload: TUser) => {
-    const result = await prisma.user.findUnique({ where: {  email: payload.email, }})
+    const result = await prisma.user.findUnique({ where: { email: payload.email, } })
     if (!result) {
         throw new AppError(401, "Invalid credentials")
     }
@@ -55,7 +54,7 @@ const login = async (payload: TUser) => {
     if (!veryfy) {
         throw new AppError(401, "Invalid credentials")
     }
-    
+
     if (!result.isEmailVerified) {
         throw new AppError(401, "Please verify your email to login")
     }
@@ -78,44 +77,44 @@ const login = async (payload: TUser) => {
     return { token }
 }
 const googleAuth = async (idToken: string) => {
-if (!idToken) {
-       throw new AppError(404, "requre idToken")
+    if (!idToken) {
+        throw new AppError(404, "requre idToken")
     }
 
     // 🔐 Verify token with Google
     const ticket = await googleOAuthClient.verifyIdToken({
-      idToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
     });
     const payload = ticket.getPayload();
-// 
+    // 
 
-        // const { picture, email, name} = payload || {};
+    // const { picture, email, name} = payload || {};
 
-        // console.log(picture, email, name)
+    // console.log(picture, email, name)
 
     if (!payload?.email) {
-         throw new AppError(404, "Invalid OAuth token")
+        throw new AppError(404, "Invalid OAuth token")
     }
 
     // 👤 Find or create user
     let user = await prisma.user.findUnique({
-      where: { email: payload.email },
+        where: { email: payload.email },
     });
 
     if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email: payload.email,
-          fullName: payload.name,
-          password: Math.random().toString(36).slice(-8), // Random password
-          role: "USER",
-          isEmailVerified: true,
-        },
-      });
+        user = await prisma.user.create({
+            data: {
+                email: payload.email,
+                fullName: payload.name,
+                password: Math.random().toString(36).slice(-8), // Random password
+                role: "USER",
+                isEmailVerified: true,
+            },
+        });
     }
 
- const jwtPayload = {
+    const jwtPayload = {
         id: user.id,
         // name: user.name,
         email: user.email,
@@ -126,7 +125,7 @@ if (!idToken) {
     const token = jwt.sign(jwtPayload, process.env.JWT_SECRET || "ebdwegweuweurgweurguwer6734873457" as string, {
         expiresIn: "7d"
     })
-    return {token}
+    return { token }
 }
 const verifyEmail = async (token: string) => {
     const decoded = jwt.verify(token, process.env.EMAIL_SECRET as string) as {
@@ -143,120 +142,144 @@ const verifyEmail = async (token: string) => {
     });
     return { message: "Email verified successfully" };
 };
-const getAllUsers = async () => {
 
-    const result = await prisma.user.findMany()
-    return result
+const forgotPassword = async (payload: { email: string }) => {
+    const { email } = payload;
 
-}
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+        throw new AppError(404, 'User not found! Please provide valid email !');
+    }
+
+    if (!user.isEmailVerified) {
+        throw new AppError(404, 'Your email is not verified. Please verify your email');
+
+    }
+    if (!user?.isActive) {
+        throw new AppError(502, 'Your account is inactive. Please contact support.');
+    }
+
+    const jwtPayload = {
+        email: user.email,
+    }
+
+        const token = jwt.sign(jwtPayload, process.env.JWT_SECRET || "ebdwegweuweurgweurguwer6734873457" as string, {
+        expiresIn: "1d"
+    })
+
+    const passwordresetLink = `${process.env.CLIENT_URL}/forgot-password?token=${token}&email=${user?.email}`;
+
+
+    const emailSubject = 'Your Reset Password Link';
+    const bodyHtml = `
+<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7fa; padding: 40px;">
+  <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+    <!-- Header -->
+    <div style="background-color: #28a745; padding: 20px; text-align: center;">
+      <h1 style="color: #ffffff; font-size: 28px; margin: 0;">Password Reset Request</h1>
+    </div>
+
+    <!-- Body -->
+    <div style="padding: 30px;">
+      <p style="font-size: 16px; color: #555; margin-bottom: 20px;">Hi ${user.fullName},</p>
+      <p style="font-size: 16px; color: #555; margin-bottom: 30px;">
+        We received a request to reset your password. Click the button below to choose a new password. This link will expire in 15 minutes.
+      </p>
+
+      <div style="text-align: center; margin-bottom: 30px;">
+        <a
+          href="${passwordresetLink}"
+          style="
+            display: inline-block;
+            background-color: #28a745;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 25px;
+            border-radius: 4px;
+            font-size: 18px;
+          "
+          target="_blank"
+        >
+          Reset Password
+        </a>
+      </div>
+
+      <p style="font-size: 14px; color: #777; margin-bottom: 20px;">
+        If you didn’t ask to reset your password, just ignore this email. No changes were made to your account.
+      </p>
+      <p style="font-size: 16px; color: #555;">Thanks,</p>
+      <p style="font-size: 16px; color: #555; font-weight: bold;">Company Name</p>
+    </div>
+
+    <!-- Footer -->
+    <div style="background-color: #f0f0f0; padding: 15px; text-align: center;">
+      <p style="font-size: 14px; color: #777; margin: 0;">&copy; ${new Date().getFullYear()} Company Name. All rights reserved.</p>
+    </div>
+  </div>
+</div>
+
+`;
+    await sendEmail(email, emailSubject, bodyHtml);
+
+
+    return {};
+
+};
+
+
+
+const resetPassword = async (payload: { token: string; newPassword: string;}) => {
+  const { newPassword, token } = payload;
+
+const deoded = jwt.verify(token, process.env.JWT_SECRET!) ;
+
+
+//   const user = await prisma.user.findFirst({
+//     where: {
+//       OR: [
+//         { deoded.email }, 
+//       ]
+//     }
+//   });
+
+//   if (!user) {
+//     throw new AppError(404, 'User not found');
+//   }
+
+  // if (!user.emailVerified) {
+  //   throw new AppError(StatusCodes.UNPROCESSABLE_ENTITY,
+  //     'Your email was not verifyed. Please verify your email before reset your password'
+  //   );
+  // }
+
+//   if (!user?.isActive) {
+//     throw new AppError(StatusCodes.UNPROCESSABLE_ENTITY, 'Your account is inactive. Please contact support.');
+//   }
+
+//   const passwordHashing = await passwordHash(newPassword);
+
+//   await prisma.user.update({
+//     where: { id: user.id }, // always use a unique field here
+//     data: { password: passwordHashing },
+//   });
+
+  return {};
+};
+
+
 
 /////// Auth Services ////////
 
-/////// Profile Services ////////
 
-const createProfile = async (payload: TProfileInput, user: TUserPayload, avatarUrl: string | null, resumeUrl: string | null) => {
-
-    payload.avatar = avatarUrl || undefined;
-    payload.resumeUpload = resumeUrl || undefined;
-    const { workExperience, education, ...rest } = payload;
-
-
-
-
-
-    const result = await prisma.profile.upsert({
-        where: { userId: user.id }, // unique field
-        update: {
-            ...rest,
-
-            // For nested relations, you might want to replace or update existing entries
-            workExperience: {
-                deleteMany: {}, // optional: delete old entries
-                create: workExperience?.map((we) => ({ ...we })),
-            },
-            education: {
-                deleteMany: {},
-                create: education?.map((edu) => ({ ...edu })),
-            },
-        },
-        create: {
-            ...rest,
-            userId: user.id,
-            workExperience: {
-                create: workExperience?.map((we) => ({ ...we })),
-            },
-            education: {
-                create: education?.map((edu) => ({ ...edu })),
-            },
-        },
-    });
-
-    return result;
-};
-const getSingleUser = async (payload: TUserPayload) => {
-
-    const { email } = payload
-
-    const result = await prisma.user.findUnique({
-        where: { email },
-        select: {
-            id: true,
-            fullName: true,
-            email: true,
-            role: true,
-            createdAt: true,
-            profile: true,
-        }
-    })
-    return result
-}
-const me = async (user: TUserPayload) => {
-
-    const result = await prisma.user.findUnique({
-        where: { email: user.email },
-        select: {
-            id: true,
-            fullName: true,
-            email: true,
-            role: true,
-            createdAt: true,
-            profile: true,
-        }
-    })
-    return result
-}
-
-const createCertificate = async (user: TUserPayload, files: Express.Multer.File[], certNames: string[]) => {
- 
-    console.log(user, files, certNames)
-    if (files.length !== certNames.length) {
-        throw new AppError(400, "Number of files and certificate names must match");
-    }   
-
-
-    // const result = await prisma.certificate.createMany({
-    //     data: {
-    //         userId: user.id,
-    //         filePath: files.map(file => file.path),
-    //         certNames: certNames,
-    //     },
-    // });    
-
-
-    // return result; 
-}
-/////// Profile Services //////
 
 export const AuthService = {
     register,
-    getAllUsers,
-    createProfile,
-    getSingleUser,
     login,
-    verifyEmail, 
-    googleAuth, 
-    me, 
-    createCertificate
+    verifyEmail,
+    googleAuth,
+    forgotPassword, 
+    resetPassword
 }
 
 
