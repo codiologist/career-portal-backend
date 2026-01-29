@@ -8,24 +8,58 @@ import { TCanditateProfile } from './user.validation';
 
 //////////////////////////////////////// Profile Services /////////////////////////////////////////////
 
-const createCandidatePersonalService = async (payload: TCanditateProfile, user: TUserPayload) => {
+const createCandidatePersonalService = async (
+    payload: TCanditateProfile,
+    user: TUserPayload
+) => {
+    const { skillIds, interstIds, socialLink, ...candidateData } = payload;
 
     const result = await prisma.candidatePersonal.upsert({
         where: {
-            userId: user.id, // or another unique field to identify the record
+            userId: user.id, // must be UNIQUE in schema
         },
         update: {
-            ...payload, // update with new payload
+            ...candidateData,
+            skills: {
+                set: skillIds?.map((id: string) => ({ id })), // 🔥 replaces old skills
+            },
+            interests: {
+                set: interstIds?.map((id: string) => ({ id })) // 🔥 replaces old interests
+            },
+            socialLink: {
+                deleteMany: {},
+                create: socialLink?.map((link: {label: string, url: string}) => ({
+                    label: link.label,
+                    url: link.url,
+                })),
+            },
         },
         create: {
-            ...payload, // create with payload if not exists
+            ...candidateData,
             userId: user.id,
+            skills: {
+                connect: skillIds?.map((id: string) => ({ id })), // 🔥 replaces old interests
+            },
+            interests: {
+                connect: interstIds?.map((id: string) => ({ id }))
+            },
+            socialLink: {
+                create: socialLink?.map((link: {label: string, url: string}) => ({
+                    label: link.label,
+                    url: link.url,
+                })),
+            },
         },
         include: {
             religion: true,
+            bloodGroup: true,
+            skills: true,
+            interests: true,
+            socialLink: true,
             user: true,
         },
     });
+
     return result;
 };
 

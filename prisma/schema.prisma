@@ -49,8 +49,8 @@ model CandidatePersonal {
   spouseName      String?   @map("spouse_name")
   mobileNo        String?   @map("mobile_no")
   alternatePhone  String?   @map("alternate_phone")
-  // gender          Gender?
-  // maritalStatus   MaritalStatus @map("marital_status")
+  gender          String
+  maritalStatus   String    @map("marital_status")
   nationality     String?
   nationalId      String?   @map("national_id")
   portfolioLink   String?   @map("portfolio_link")
@@ -58,28 +58,73 @@ model CandidatePersonal {
   photo     String?
   signature String?
   resume    String?
-  religion  Religion? @relation(fields: [religionId], references: [id])
+
+  religionId String?
+  religion   Religion? @relation(fields: [religionId], references: [id])
+
+  bloodGroupId String?
+  bloodGroup   BloodGroup? @relation(fields: [bloodGroupId], references: [id])
+
+  interests Interst[] @relation("CandidateInterests") // many-to-many
+  skills    Skill[]   @relation("CandidateSkills") // many-to-many
+
+  socialLink SocialLink[]
 
   userId String @unique @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-  religionId String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([userId])
   @@map("candidate_personals")
 }
 
 model Religion {
-  id                 String              @id @default(uuid())
-  name               String
-  candidatePersonals CandidatePersonal[]
+  id                String              @id @default(uuid())
+  name              String
+  candidatePersonal CandidatePersonal[]
 
   @@map("religions")
 }
 
+model SocialLink {
+  id                  String            @id @default(uuid())
+  label               String
+  url                 String
+  candidatePersonalId String            @map("candidate_personal_id")
+  candidatePersonal   CandidatePersonal @relation(fields: [candidatePersonalId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("social_links")
+}
+
+model Interst {
+  id                 String              @id @default(uuid())
+  interstName        String              @map("interst_name")
+  candidatesPersonal CandidatePersonal[] @relation("CandidateInterests")
+
+  @@map("intersts")
+}
+
+model Skill {
+  id                 String              @id @default(uuid())
+  skillName          String              @map("skill_name")
+  candidatesPersonal CandidatePersonal[] @relation("CandidateSkills")
+
+  @@map("skills")
+}
+
+model BloodGroup {
+  id                 String              @id @default(uuid())
+  name               String
+  candidatePersonals CandidatePersonal[]
+
+  @@map("blood_groups")
+}
+
 ///////////////////////////////////  CandidatePersonal ///////////////////////////////////////////
+
+///////////////////////////////////  CandidateEducation ///////////////////////////////////////////
 
 // model CandidateEducation {
 //   id          String  @id @default(uuid())

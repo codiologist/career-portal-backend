@@ -1,3 +1,5 @@
+/////// religions Dropdowns //////////
+
 INSERT INTO religions (id, name) VALUES
 (gen_random_uuid(), 'Islam'),
 (gen_random_uuid(), 'Hinduism'),
@@ -11,5 +13,60 @@ INSERT INTO religions (id, name) VALUES
 
 
 
+/////// Blood Group Dropdowns //////////
 
 
+INSERT INTO blood_groups (id, name) VALUES
+(gen_random_uuid(), 'A+'),
+(gen_random_uuid(), 'A-'),
+(gen_random_uuid(), 'B+'),
+(gen_random_uuid(), 'B-'),
+(gen_random_uuid(), 'AB+'),
+(gen_random_uuid(), 'AB-'),
+(gen_random_uuid(), 'O+'),
+(gen_random_uuid(), 'O-');
+
+
+
+/////// Skill Dropdowns //////////
+ 
+
+INSERT INTO skills (id, skill_name) VALUES
+(gen_random_uuid(), 'JavaScript'),
+(gen_random_uuid(), 'TypeScript'),
+(gen_random_uuid(), 'Node.js'),
+(gen_random_uuid(), 'Express.js'),
+(gen_random_uuid(), 'Next.js'),
+(gen_random_uuid(), 'React'),
+(gen_random_uuid(), 'MongoDB'),
+(gen_random_uuid(), 'PostgreSQL'),
+(gen_random_uuid(), 'Prisma'),
+(gen_random_uuid(), 'REST API'),
+(gen_random_uuid(), 'JWT Authentication'),
+(gen_random_uuid(), 'Docker'),
+(gen_random_uuid(), 'AWS'),
+(gen_random_uuid(), 'Git'),
+(gen_random_uuid(), 'GitHub');
+
+
+
+
+
+/////// Intersts Dropdowns //////////
+
+INSERT INTO intersts (id, interst_name) VALUES
+(gen_random_uuid(), 'Programming'),
+(gen_random_uuid(), 'Web Development'),
+(gen_random_uuid(), 'Software Engineering'),
+(gen_random_uuid(), 'Open Source'),
+(gen_random_uuid(), 'Problem Solving'),
+(gen_random_uuid(), 'Artificial Intelligence'),
+(gen_random_uuid(), 'Machine Learning'),
+(gen_random_uuid(), 'Data Science'),
+(gen_random_uuid(), 'Cyber Security'),
+(gen_random_uuid(), 'Cloud Computing'),
+(gen_random_uuid(), 'Reading Tech Blogs'),
+(gen_random_uuid(), 'Learning New Technologies'),
+(gen_random_uuid(), 'Startup & Entrepreneurship'),
+(gen_random_uuid(), 'Freelancing'),
+(gen_random_uuid(), 'Teaching & Mentoring');

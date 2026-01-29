@@ -13,10 +13,17 @@ import { UserProfileValidation } from './user.validation';
 const router = express.Router();
 
 
-///// User /////
 // router.post("/certificates", uploadBystorage.array("certificates"),  auth(AuthGard.USER), UserController.createCertificate);
 router.get('/me', auth(AuthGard.ADMIN, AuthGard.MODERATOR, AuthGard.USER, AuthGard.HR), UserController.me);
+
+///// candidate personal /////////////
 router.post('/profile/personal', validationSchema(UserProfileValidation.userProfileSPersonalchema), auth(AuthGard.USER), UserController.createCandidatePersonal)
+
+
+
+//////////////////get /////////////////////
+
+
 router.post('/profile/educations', auth(AuthGard.USER), UserController.createCandidatePersonal)
 router.post('/profile/experiences', auth(AuthGard.USER), UserController.createCandidatePersonal)
 // router.post('/profile/personal', auth(AuthGard.USER), UserController.createCandidatePersonal)

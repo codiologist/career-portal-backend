@@ -1,6 +1,19 @@
 
 import { z } from "zod";
 
+
+const socialLinkSchema = z.array(
+  z.object({
+    label: z
+      .string()
+      .min(1, "Social platform label is required"),
+
+    url: z
+      .string()
+      .url("Invalid URL format"),
+  })
+);
+
 // Zod validation schema
 export const userProfileSPersonalchema = z.object({
   careerTitle: z.string(),
@@ -15,39 +28,27 @@ export const userProfileSPersonalchema = z.object({
   spouseName: z.string().nullable(),
   mobileNo: z.string(),
   alternatePhone: z.string().nullable(),
+  gender: z.string(),
+  maritalStatus: z.string(),
   nationality: z.string(),
   nationalId: z.string(),
   portfolioLink: z.string().url(),
-  createdAt: z.string().refine(
-    (date) => !isNaN(Date.parse(date)),
-    { message: "Invalid date format" }
-  ),
-  updatedAt: z.string().refine(
-    (date) => !isNaN(Date.parse(date)),
-    { message: "Invalid date format" }
-  ),
   religionId: z.string().uuid(),
+  bloodGroupId: z.string().uuid(),
+  socialLink: socialLinkSchema,
+  skillIds: z
+    .array(z.string().uuid("Invalid skill id"))
+    .min(1, "At least one skill is required"),
+  interstIds: z.array(z.string().uuid("Invalid skill id"))
+    .min(1, "At least one skill is required"),
+
 });
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const UserProfileValidation = {
-    userProfileSPersonalchema
+  userProfileSPersonalchema
 }
 
 
