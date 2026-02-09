@@ -6,7 +6,7 @@ import { prisma } from '../../config/prisma';
 import { AppError } from '../../utils/AppError';
 import { createEmailToken } from '../../utils/createEmailToken';
 import sendEmail from '../../utils/sendEmail';
-import bcrypt from "bcryptjs";
+import bcrypt from 'bcryptjs';
 import { verifyEmailTemplate } from '../../utils/emailTemplate/VerifyLink';
 import { googleOAuthClient } from '../../config/oauth';
 import axios from 'axios';
@@ -14,82 +14,87 @@ import axios from 'axios';
 
 
 
-
 /////////////////// Auth Services /////////////
 const register = async (payload: TUser) => {
-
-
-  const salt = bcrypt.genSaltSync(process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS) : 10);
+  const salt = bcrypt.genSaltSync(
+    process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS) : 10,
+  );
   const hash = bcrypt.hashSync(payload.password, salt);
   payload.password = hash;
 
-
-
-  const isExist = await prisma.user.findUnique({ where: { email: payload.email } })
+  const isExist = await prisma.user.findUnique({
+    where: { email: payload.email },
+  });
 
   if (isExist?.isEmailVerified) {
-    throw new AppError(404, "User already veryfied. please login");
+    throw new AppError(404, 'User already veryfied. please login');
   }
 
-  if (isExist && !isExist.isEmailVerified) {
-    const token = createEmailToken(isExist.id);
+  // if (isExist && !isExist.isEmailVerified) {
+  //   const token = createEmailToken(isExist.id);
+  //   const link = `${process.env.BASE_API}/auth/verify-email?token=${token}`;
+  //   const emailTemplate = verifyEmailTemplate(link);
+
+  //   await sendEmail(isExist.email, 'Verify your email', emailTemplate);
+  //   console.log('email send successfull');
+  //   return;
+  // }
+
+  const result = await prisma.user.create({
+    data: {
+      ...payload,
+    },
+  });
+
+  if (!result.isEmailVerified) {
+    const token = createEmailToken(result.id);
     const link = `${process.env.BASE_API}/auth/verify-email?token=${token}`;
     const emailTemplate = verifyEmailTemplate(link);
 
-    await sendEmail(isExist.email, "Verify your email", emailTemplate);
-    console.log("email send successfull")
-    return
+    await sendEmail(result.email, 'Verify your email', emailTemplate);
+    console.log('email send successfull');
   }
 
-  await prisma.user.create({
-    data: {
-      ...payload
-    }
-  })
+  return {};
+};
 
-
-  return {}
-}
 const login = async (payload: TUser) => {
+  console.log(payload.recaptchaToken);
 
-  console.log(payload.recaptchaToken)
-
-const secret = process.env.RECAPTCHA_SECRET_KEY;
+  const secret = process.env.RECAPTCHA_SECRET_KEY;
 
   const response = await axios.post(
-    "https://www.google.com/recaptcha/api/siteverify",
+    'https://www.google.com/recaptcha/api/siteverify',
     null,
     {
       params: {
         secret,
         response: payload.recaptchaToken,
       },
-    }
+    },
   );
 
-  console.log(response.data)
+  console.log(response.data);
 
-
-
-
-
-  const result = await prisma.user.findUnique({ where: { email: payload.email, } })
+  const result = await prisma.user.findUnique({
+    where: { email: payload.email },
+  });
   if (!result) {
-    throw new AppError(401, "User Not found")
+    throw new AppError(401, 'User Not found');
   }
 
   const veryfy = bcrypt.compareSync(payload.password, result.password); // true
 
   if (!veryfy) {
-    throw new AppError(401, "Please enter valid password")
+    throw new AppError(401, 'Please enter valid password');
   }
 
   if (!result.isEmailVerified) {
-    throw new AppError(401, "Please verify your email to login")
+    throw new AppError(401, 'Please verify your email to login');
   }
 
   if (!result) {
-    throw new Error("User not found")
+    throw new Error('User not found');
   }
   const jwtPayload = {
     id: result.id,
@@ -98,16 +103,20 @@ const secret = process.env.RECAPTCHA_SECRET_KEY;
     role: result.role,
     createdAt: result.createdAt,
     // updatedAt: result.updatedAt
-  }
-  const token = jwt.sign(jwtPayload, process.env.JWT_SECRET || "ebdwegweuweurgweurguwer6734873457" as string, {
-    expiresIn: "7d"
-  })
-  console.log(token)
-  return { token }
-}
+  };
+  const token = jwt.sign(
+    jwtPayload,
+    process.env.JWT_SECRET || ('ebdwegweuweurgweurguwer6734873457' as string),
+    {
+      expiresIn: '7d',
+    },
+  );
+  console.log(token);
+  return { token };
+};
 const googleAuth = async (idToken: string) => {
   if (!idToken) {
-    throw new AppError(404, "requre idToken")
+    throw new AppError(404, 'requre idToken');
   }
 
   // 🔐 Verify token with Google
@@ -116,14 +125,14 @@ const googleAuth = async (idToken: string) => {
     audience: process.env.GOOGLE_CLIENT_ID,
   });
   const payload = ticket.getPayload();
-  // 
+  //
 
   // const { picture, email, name} = payload || {};
 
   // console.log(picture, email, name)
 
   if (!payload?.email) {
-    throw new AppError(404, "Invalid OAuth token")
+    throw new AppError(404, 'Invalid OAuth token');
   }
 
   // 👤 Find or create user
@@ -137,7 +146,7 @@ const googleAuth = async (idToken: string) => {
         email: payload.email,
         fullName: payload.name,
         password: Math.random().toString(36).slice(-8), // Random password
-        role: "USER",
+        role: 'USER',
         isEmailVerified: true,
       },
     });
@@ -150,26 +159,31 @@ const googleAuth = async (idToken: string) => {
     role: user.role,
     createdAt: user.createdAt,
     // updatedAt: user.updatedAt
-  }
-  const token = jwt.sign(jwtPayload, process.env.JWT_SECRET || "ebdwegweuweurgweurguwer6734873457" as string, {
-    expiresIn: "7d"
-  })
-  return { token }
-}
+  };
+  const token = jwt.sign(
+    jwtPayload,
+    process.env.JWT_SECRET || ('ebdwegweuweurgweurguwer6734873457' as string),
+    {
+      expiresIn: '7d',
+    },
+  );
+  return { token };
+};
 const verifyEmail = async (token: string) => {
   const decoded = jwt.verify(token, process.env.EMAIL_SECRET as string) as {
-    userId: string; id: string
+    userId: string;
+    id: string;
   };
-  console.log(decoded)
+  console.log(decoded);
   const user = await prisma.user.findFirst({ where: { id: decoded.userId } });
   if (!user) {
-    throw new AppError(404, "User not found");
+    throw new AppError(404, 'User not found');
   }
   await prisma.user.update({
     where: { id: decoded.userId },
-    data: { isEmailVerified: true }
+    data: { isEmailVerified: true },
   });
-  return { message: "Email verified successfully" };
+  return { message: 'Email verified successfully' };
 };
 const forgotPassword = async (payload: { email: string }) => {
   const { email } = payload;
@@ -181,23 +195,31 @@ const forgotPassword = async (payload: { email: string }) => {
   }
 
   if (!user.isEmailVerified) {
-    throw new AppError(404, 'Your email is not verified. Please verify your email');
-
+    throw new AppError(
+      404,
+      'Your email is not verified. Please verify your email',
+    );
   }
   if (!user?.isActive) {
-    throw new AppError(502, 'Your account is inactive. Please contact support.');
+    throw new AppError(
+      502,
+      'Your account is inactive. Please contact support.',
+    );
   }
 
   const jwtPayload = {
     email: user.email,
-  }
+  };
 
-  const token = jwt.sign(jwtPayload, process.env.JWT_SECRET || "ebdwegweuweurgweurguwer6734873457" as string, {
-    expiresIn: "1d"
-  })
+  const token = jwt.sign(
+    jwtPayload,
+    process.env.JWT_SECRET || ('ebdwegweuweurgweurguwer6734873457' as string),
+    {
+      expiresIn: '1d',
+    },
+  );
 
   const passwordresetLink = `${process.env.CLIENT_URL}/forgot-password?token=${token}`;
-
 
   const emailSubject = 'Your Reset Password Link';
   const bodyHtml = `
@@ -250,28 +272,28 @@ const forgotPassword = async (payload: { email: string }) => {
 `;
   await sendEmail(email, emailSubject, bodyHtml);
 
-
   return {};
-
 };
-const resetPassword = async (payload: { token: string; newPassword: string }) => {
+const resetPassword = async (payload: {
+  token: string;
+  newPassword: string;
+}) => {
   const { token, newPassword } = payload;
 
   if (!newPassword || newPassword.length < 6) {
-    throw new AppError(400, "Password must be at least 6 characters long");
+    throw new AppError(400, 'Password must be at least 6 characters long');
   }
 
   let email: string;
 
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET!
-    ) as { email: string };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      email: string;
+    };
 
     email = decoded.email;
   } catch {
-    throw new AppError(401, "Invalid or expired token");
+    throw new AppError(401, 'Invalid or expired token');
   }
 
   const user = await prisma.user.findUnique({
@@ -279,20 +301,20 @@ const resetPassword = async (payload: { token: string; newPassword: string }) =>
   });
 
   if (!user) {
-    throw new AppError(404, "User not found");
+    throw new AppError(404, 'User not found');
   }
 
   if (!user.isEmailVerified) {
-    throw new AppError(400, "Please verify your email first");
+    throw new AppError(400, 'Please verify your email first');
   }
 
   if (!user.isActive) {
-    throw new AppError(403, "Your account is inactive. Contact support.");
+    throw new AppError(403, 'Your account is inactive. Contact support.');
   }
 
   const hashPassword = await bcrypt.hash(
     newPassword,
-    Number(process.env.SALT_ROUNDS) || 10
+    Number(process.env.SALT_ROUNDS) || 10,
   );
 
   await prisma.user.update({
@@ -302,7 +324,10 @@ const resetPassword = async (payload: { token: string; newPassword: string }) =>
 
   return {};
 };
-const changePassword = async (payload: { currentPassword: string, newPassword: string }, user: TUserPayload) => {
+const changePassword = async (
+  payload: { currentPassword: string; newPassword: string },
+  user: TUserPayload,
+) => {
   const { currentPassword, newPassword } = payload;
 
   const existingUser = await prisma.user.findUnique({ where: { id: user.id } });
@@ -312,31 +337,39 @@ const changePassword = async (payload: { currentPassword: string, newPassword: s
   }
 
   if (!existingUser.isEmailVerified) {
-    throw new AppError(404, 'Your email is not verified. Please verify your email');
-
+    throw new AppError(
+      404,
+      'Your email is not verified. Please verify your email',
+    );
   }
   if (!existingUser?.isActive) {
-    throw new AppError(502, 'Your account is inactive. Please contact support.');
+    throw new AppError(
+      502,
+      'Your account is inactive. Please contact support.',
+    );
   }
 
-  const compairPass = await bcrypt.compareSync(currentPassword, existingUser.password); // true
+  const compairPass = await bcrypt.compareSync(
+    currentPassword,
+    existingUser.password,
+  ); // true
 
   if (!compairPass) {
     throw new AppError(404, 'Please enter valid Password');
   }
 
-  const salt = bcrypt.genSaltSync(process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS) : 10);
+  const salt = bcrypt.genSaltSync(
+    process.env.SALT_ROUNDS ? parseInt(process.env.SALT_ROUNDS) : 10,
+  );
   const hash = bcrypt.hashSync(newPassword, salt);
-  const hashNewPassword = hash
+  const hashNewPassword = hash;
 
   const updatePassword = await prisma.user.update({
     where: { id: existingUser.id },
     data: {
-      password: hashNewPassword
-    }
-  })
-
-
+      password: hashNewPassword,
+    },
+  });
 
   const emailSubject = 'Your password has been changed';
   const bodyHtml = `
@@ -389,14 +422,14 @@ const changePassword = async (payload: { currentPassword: string, newPassword: s
 
   await sendEmail(updatePassword.email, emailSubject, bodyHtml);
 
-
   return {};
-
 };
-//////////////// Auth Services /////////////////
 
 
 
+
+
+/////// Auth Services ////////
 
 
 
@@ -408,7 +441,4 @@ export const AuthService = {
   forgotPassword,
   resetPassword,
   changePassword,
-}
-
-
-
+};

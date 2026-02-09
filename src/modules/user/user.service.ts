@@ -102,29 +102,28 @@ const dropdown = async () => {
 
 
 const me = async (user: TUserPayload) => {
-
-    const result = await prisma.user.findUnique({
-        where: { email: user.email },
-        select: {
-            id: true,
-            fullName: true,
-            email: true,
-            role: true,
-            createdAt: true,
-            candidatePersonal: {
-                include: {
-                    religion: true, 
-                    interests: true, 
-                    bloodGroup: true, 
-                    skills: true
-                }
-            },
-            candidateExperiences : true
-        }
-    })
-    return result
-}
-
+  const result = await prisma.user.findUnique({
+    where: { email: user.email },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      role: true,
+      createdAt: true,
+      candidatePersonal: {
+        include: {
+          religion: true,
+          interests: true,
+          bloodGroup: true,
+          skills: true,
+        },
+      },
+      candidateExperiences: true,
+    },
+  });
+  return result;
+};
 
 //////////////////////////////// Profile Services //////////////////////////////////////////////////
 

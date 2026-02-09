@@ -87,6 +87,7 @@ INSERT INTO union_parishads (id, upazila_id, name, bn_name, status, created_at, 
 VALUES 
 (gen_random_uuid(), (SELECT id FROM upazilas WHERE name='Dhanmondi'), 'Example Union', 'উদাহরণ ইউনিয়ন', true, now(), now());
 
+
 -- Police Station
 INSERT INTO police_stations (id, district_id, geo_code, bn_name, url, status, created_at, updated_at)
 VALUES 
