@@ -114,6 +114,7 @@ const me = async (user: TUserPayload) => {
           interests: true,
           bloodGroup: true,
           skills: true,
+          socialLink: true,
         },
       },
       candidateExperiences: true,
