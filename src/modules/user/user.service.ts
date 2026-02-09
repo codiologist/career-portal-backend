@@ -70,6 +70,8 @@ const createCandidateExperienceService = async (
   const experiences = payload.map((exp) => ({
     userId: user.id,
     companyName: exp.companyName,
+    companyBusinessType: exp.companyBusinessType,
+    location: exp.location,
     designation: exp.designation,
     startDate: exp.startDate,
     endDate: exp.endDate,
@@ -98,6 +100,7 @@ const dropdown = async () => {
   };
 };
 
+
 const me = async (user: TUserPayload) => {
 
     const result = await prisma.user.findUnique({
@@ -123,99 +126,102 @@ const me = async (user: TUserPayload) => {
 }
 
 
-// const createCertificate = async (user: TUserPayload, files: Express.Multer.File[], certNames: string[]) => {
-
-//     console.log(user, files, certNames)
-//     if (files.length !== certNames.length) {
-//         throw new AppError(400, "Number of files and certificate names must match");
-//     }
-
-//     // const result = await prisma.certificate.createMany({
-//     //     data: {
-//     //         userId: user.id,
-//     //         filePath: files.map(file => file.path),
-//     //         certNames: certNames,
-//     //     },
-//     // });
-
-//     // return result;
-// }
 //////////////////////////////// Profile Services //////////////////////////////////////////////////
 
-const getDivisionWithDistrictsAndUpazilas = async (payload: {
-  divisionId: string;
-  districtId: string;
-  upazilaId: string;
-}) => {
-  try {
-    const { districtId, divisionId, upazilaId } = payload;
+// const getDivisionWithDistrictsAndUpazilas = async (payload: {
+//   divisionId: string;
+//   districtId: string;
+//   upazilaId: string;
+// }) => {
+//   try {
+//     const { districtId, divisionId, upazilaId } = payload;
 
-    console.log(payload);
+//     console.log(payload);
 
-    // 1️⃣ No params → return all divisions
-    if (!divisionId && !districtId && !upazilaId) {
-      const divisions = await prisma.division.findMany({
-        select: { id: true, name: true },
-      });
-      return { level: 'division', data: divisions };
-    }
+//     // 1️⃣ No params → return all divisions
+//     if (!divisionId && !districtId && !upazilaId) {
+//       const divisions = await prisma.division.findMany({
+//         select: { id: true, name: true },
+//       });
+//       return { level: 'division', data: divisions };
+//     }
 
-    // 2️⃣ Division selected → return districts
-    if (divisionId && !districtId && !upazilaId) {
-      const districts = await prisma.district.findMany({
-        where: { divisionId: divisionId as string },
-        select: { id: true, name: true },
-      });
-      return { level: 'district', data: districts };
-    }
+//     // 2️⃣ Division selected → return districts
+//     if (divisionId && !districtId && !upazilaId) {
+//       const districts = await prisma.district.findMany({
+//         where: { divisionId: divisionId as string },
+//         select: { id: true, name: true },
+//       });
+//       return { level: 'district', data: districts };
+//     }
 
-    // 3️⃣ District selected → return upazilas + police stations
-    if (districtId && !upazilaId) {
-      const upazilas = await prisma.upazila.findMany({
-        where: { districtId: districtId as string },
-        select: { id: true, name: true },
-      });
-      const policeStations = await prisma.policeStation.findMany({
-        where: { districtId: districtId as string },
-        select: { id: true, bnName: true },
-      });
-      return { level: 'upazila', upazilas, policeStations };
-    }
+//     // 3️⃣ District selected → return upazilas + police stations
+//     if (districtId && !upazilaId) {
+//       const upazilas = await prisma.upazila.findMany({
+//         where: { districtId: districtId as string },
+//         select: { id: true, name: true },
+//       });
+//       const policeStations = await prisma.policeStation.findMany({
+//         where: { districtId: districtId as string },
+//         select: { id: true, bnName: true },
+//       });
+//       return { level: 'upazila', upazilas, policeStations };
+//     }
 
-    // 4️⃣ Upazila selected → return municipalities, unions, post offices
-    if (upazilaId) {
-      const municipalities = await prisma.municipality.findMany({
-        where: { upazilaId: upazilaId as string },
-        select: { id: true, name: true },
-      });
-      const unionParishads = await prisma.unionParishad.findMany({
-        where: { upazilaId: upazilaId as string },
-        select: { id: true, name: true },
-      });
-      const postOffices = await prisma.postOffice.findMany({
-        where: { upazilaId: upazilaId as string },
-        select: { id: true, postOffice: true, postCode: true },
-      });
-      return {
-        level: 'upazila-detail',
-        municipalities,
-        unionParishads,
-        postOffices,
-      };
-    }
+//     // 4️⃣ Upazila selected → return municipalities, unions, post offices
+//     if (upazilaId) {
+//       const municipalities = await prisma.municipality.findMany({
+//         where: { upazilaId: upazilaId as string },
+//         select: { id: true, name: true },
+//       });
+//       const unionParishads = await prisma.unionParishad.findMany({
+//         where: { upazilaId: upazilaId as string },
+//         select: { id: true, name: true },
+//       });
+//       const postOffices = await prisma.postOffice.findMany({
+//         where: { upazilaId: upazilaId as string },
+//         select: { id: true, postOffice: true, postCode: true },
+//       });
+//       return {
+//         level: 'upazila-detail',
+//         municipalities,
+//         unionParishads,
+//         postOffices,
+//       };
+//     }
 
-    return { message: 'Invalid query' };
-  } catch (error) {
-    console.error(error);
-    return { message: 'Invalid query' };
-  }
+//     return { message: 'Invalid query' };
+//   } catch (error) {
+//     console.error(error);
+//     return { message: 'Invalid query' };
+//   }
+// };
+
+
+
+const createCandidateEducationService = async (
+  payload: any,
+  user: TUserPayload,
+) => {
+  const result = await prisma.candidateEducation.create({
+    data: {
+      userId: user.id,
+      // institutionName: payload.institutionName,
+      // degree: payload.degree,
+      // fieldOfStudy: payload.fieldOfStudy,
+      // startDate: payload.startDate,
+      // endDate: payload.endDate,
+    },
+  });
+
+  return result;
 };
 
 export const UserService = {
   createCandidatePersonalService,
   createCandidateExperienceService,
   me,
-  // createCertificate
-  getDivisionWithDistrictsAndUpazilas,
+  // getDivisionWithDistrictsAndUpazilas,
   dropdown,
+  createCandidateEducationService
 };

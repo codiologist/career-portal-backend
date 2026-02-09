@@ -51,19 +51,20 @@ export const userProfileSPersonalchema = z.object({
 
 /////////// Exprience validation schema //////////////////////
 
+
 export const workExperienceSchema = z.object({
   companyName: z
     .string()
     .min(1, "Company name is required")
     .min(2, "Company name must be at least 2 characters"),
 
-  companyBusiness: z
+  companyBusinessType: z
     .string()
-    .min(1, "Company business is required"),
+    .min(1, "Company business type is required"),
 
-  // location: z
-  //   .string()
-  //   .min(1, "Location is required"),
+  location: z
+    .string()
+    .min(1, "Location is required"),
 
   designation: z
     .string()
@@ -73,6 +74,8 @@ export const workExperienceSchema = z.object({
     .string()
     .min(1, "Department is required"),
 
+  isContinue: z.boolean(),
+
   startDate: z
     .string()
     .datetime({ message: "Start date must be a valid ISO datetime" }),
@@ -80,9 +83,22 @@ export const workExperienceSchema = z.object({
   endDate: z
     .string()
     .datetime({ message: "End date must be a valid ISO datetime" })
-    .optional()
-    .nullable(),
-});
+    .nullable()
+    .optional(),
+})
+.refine(
+  (data) => {
+    // If not continuing, endDate must exist
+    if (!data.isContinue) {
+      return !!data.endDate
+    }
+    return true
+  },
+  {
+    message: "End date is required if the job is not ongoing",
+    path: ["endDate"],
+  }
+)
 
 /////////// Exprience validation schema //////////////////////
 const workExperienceArraySchema = z.array(workExperienceSchema);

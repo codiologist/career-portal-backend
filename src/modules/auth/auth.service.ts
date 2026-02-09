@@ -12,7 +12,10 @@ import { googleOAuthClient } from '../../config/oauth';
 import axios from 'axios';
 
 
-//////////// Auth Services /////////////
+
+
+
+/////////////////// Auth Services /////////////
 const register = async (payload: TUser) => {
 
 
@@ -390,12 +393,10 @@ const changePassword = async (payload: { currentPassword: string, newPassword: s
   return {};
 
 };
+//////////////// Auth Services /////////////////
 
 
 
-
-
-/////// Auth Services ////////
 
 
 

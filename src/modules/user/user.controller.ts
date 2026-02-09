@@ -78,14 +78,24 @@ const dropdown = catchAsync(async (req, res) => {
 ////// Dropdown Data ///////////////
 
 
-const getDivisionWithDistrictsAndUpazilas = catchAsync(async (req, res) => {
+// const getDivisionWithDistrictsAndUpazilas = catchAsync(async (req, res) => {
 
 
-  const result = await UserService.getDivisionWithDistrictsAndUpazilas(req.query as {divisionId: string, districtId: string, upazilaId:string})
+//   const result = await UserService.getDivisionWithDistrictsAndUpazilas(req.query as {divisionId: string, districtId: string, upazilaId:string})
 
+//   res.status(201).json({
+//     status: true,
+//     message: "get all locations",
+//     data: result
+//   })
+// })
+
+const createCandidateEducation = catchAsync(async (req, res) => {
+
+  const result = await UserService.createCandidateEducationService(req.body, req.user as TUserPayload)
   res.status(201).json({
     status: true,
-    message: "get all locations",
+    message: "Created user Education successfully",
     data: result
   })
 })
@@ -97,8 +107,9 @@ export const UserController = {
   me,
   
   //// Dropdown query 
-  getDivisionWithDistrictsAndUpazilas, 
-  dropdown
+  // getDivisionWithDistrictsAndUpazilas, 
+  dropdown, 
+  createCandidateEducation
 }
 
 

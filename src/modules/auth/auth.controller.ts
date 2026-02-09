@@ -14,11 +14,11 @@ const register = catchAsync(async (req, res) => {
     data: result
   })
 })
+
+
+
 const login = catchAsync(async (req, res) => {
-
   const { token } = await AuthService.login(req.body)
-
-
   const cookieOptions = {
     httpOnly: true,
     secure: true,
@@ -33,6 +33,8 @@ const login = catchAsync(async (req, res) => {
     data: { token: token },
   })
 })
+
+
 const verifyEmail = catchAsync(async (req, res) => {
 
   const token = req.query.token as string;

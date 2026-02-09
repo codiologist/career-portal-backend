@@ -36,6 +36,8 @@ model User {
   candidateReferences  CandidateReference[]
   candidateLanguages   CandidateLanguage[]
   addresses            Address[]
+  documents            Document[]
+  policeStations       BasePoliceStation[]
 
   @@index([id, email])
   @@map("users")
@@ -132,17 +134,18 @@ model BloodGroup {
 ///////////////////////////////////  CandidateEducation ///////////////////////////////////////////
 
 model CandidateEducation {
-  id          String   @id @default(uuid())
-  studyYear   String?  @map("study_year")
-  passingYear String?  @map("passing_year")
-  resultType  String?  @map("result_type")
+  id          String     @id @default(uuid())
+  studyYear   String?    @map("study_year")
+  passingYear String?    @map("passing_year")
+  resultType  String?    @map("result_type")
   result      String?
-  totalCgpa   String?  @map("total_cgpa")
-  userId      String   @map("user_id")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  totalCgpa   String?    @map("total_cgpa")
+  userId      String     @map("user_id")
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
   subjects    Subject?
+  documents   Document[]
 
   @@map("candidate_educations")
 }
@@ -154,26 +157,30 @@ model Subject {
 
   candidateEducationId String             @unique @map("user_id")
   candidateEducation   CandidateEducation @relation(fields: [candidateEducationId], references: [id], onDelete: Cascade)
+
+  @@map("subjects")
 }
 
 ///////////////////////////////////  Candidate Education ///////////////////////////////////////////
 
 ///////////////////////////////////  Candidate Exprience ///////////////////////////////////////////
 model CandidateExperience {
-  id              String    @id @default(uuid())
-  companyName     String    @map("company_name")
-  companyBusiness String?   @map("company_business")
-  location        String?
-  designation     String
-  department      String?
-  startDate       DateTime  @map("start_date")
-  endDate         DateTime? @map("end_date")
+  id                  String    @id @default(uuid())
+  companyName         String    @map("company_name")
+  companyBusinessType String?   @map("company_business_type")
+  location            String?
+  designation         String
+  department          String?
+  isContinue          Boolean?  @default(false) @map("is_continue")
+  startDate           DateTime  @map("start_date")
+  endDate             DateTime? @map("end_date")
 
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  documents Document[]
 
   @@unique([userId, companyName, designation])
   @@map("candidate_experiences")
@@ -220,6 +227,42 @@ model CandidateLanguage {
 
 ///////////////////////////////////  Candidate Language ///////////////////////////////////////////
 
+///////////////////////////////////  Candidate document ///////////////////////////////////////////
+
+enum DocumentType {
+  AVATAR
+  RESUME
+  SIGNATURE
+  CERTIFICATE
+  OTHER
+}
+
+
+model Document {
+  id                    String               @id @default(cuid())
+
+  type                  DocumentType
+  name                  String? // Certificate name or custom file name
+  path                  String
+  size                  Int
+  mimeType              String               @map("mime_type")
+  createdAt             DateTime             @default(now()) @map("created_at")
+    userId                String               @map("user_id")
+  user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Optional relation to a candidate experience
+  candidateExperienceId String?              @map("candidate_experience_id")
+  candidateExperience   CandidateExperience? @relation(fields: [candidateExperienceId], references: [id], onDelete: Cascade)
+
+  candidateEducationId String?             @map("candidate_education_id")
+  candidateEducation   CandidateEducation? @relation(fields: [candidateEducationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, name]) // prevents duplicate certificate names per user
+  @@index([userId])
+  @@map("documents")
+}
+
+///////////////////////////////////  Candidate document ///////////////////////////////////////////
+
 ///////////////////////////////////  Candidate Address ///////////////////////////////////////////
 
 model AddressType {
@@ -265,132 +308,250 @@ model Address {
   @@map("address")
 }
 
-model Division {
-  id        String   @id @default(uuid())
-  geoCode   String?  @map("geo_code")
-  name      String
-  bnName    String?  @map("bn_name")
-  url       String?
-  status    Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  districts District[]
-
-  @@map("divisions")
-}
-
-model District {
-  id         String   @id @default(uuid())
-  divisionId String   @map("division_id")
-  geoCode    String?  @map("geo_code")
-  name       String
-  bnName     String?  @map("bn_name")
-  lat        Float?
-  lon        Float?
-  url        String?
-  status     Boolean  @default(true)
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-
-  division       Division        @relation(fields: [divisionId], references: [id])
-  upazilas       Upazila[]
-  policeStations PoliceStation[]
-  postOffices    PostOffice[]
-
-  @@map("districts")
-}
-
-model Upazila {
-  id         String   @id @default(uuid())
-  districtId String   @map("district_id")
-  geoCode    String?  @map("geo_code")
-  name       String
-  bnName     String?  @map("bn_name")
-  url        String?
-  status     Boolean  @default(true)
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-
-  district       District        @relation(fields: [districtId], references: [id])
-  municipalities Municipality[]
-  unions         UnionParishad[]
-  postOffices    PostOffice[]
-
-  @@map("upazilas")
-}
-
-model Municipality {
-  id        String   @id @default(uuid())
-  upazilaId String   @map("upazila_id")
-  name      String
-  bnName    String?  @map("bn_name")
-  status    Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  upazila Upazila @relation(fields: [upazilaId], references: [id])
-
-  @@map("municipalities")
-}
-
-model UnionParishad {
-  id        String   @id @default(uuid())
-  upazilaId String   @map("upazila_id")
-  name      String
-  bnName    String?  @map("bn_name")
-  status    Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  upazila Upazila @relation(fields: [upazilaId], references: [id])
-
-  @@map("union_parishads")
-}
-
-model PoliceStation {
-  id         String   @id @default(uuid())
-  districtId String   @map("district_id")
-  geoCode    String?  @map("geo_code")
-  url        String?
-  bnName     String?  @map("bn_name")
-  status     Boolean  @default(true)
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-
-  district District @relation(fields: [districtId], references: [id])
-
-  @@map("police_stations")
-}
-
-model PostOffice {
-  id         String   @id @default(uuid())
-  districtId String   @map("district_id")
-  upazilaId  String   @map("upazila_id")
-  postOffice String   @map("post_office")
-  postCode   String   @map("post_code")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-
-  district District @relation(fields: [districtId], references: [id])
-  upazila  Upazila  @relation(fields: [upazilaId], references: [id])
-
-  @@map("post_offices")
-}
-
-///////////////////////////////////  Candidate Address ///////////////////////////////////////////
-
-/////// Dropdown Option Tabile ///////////////////////////
-
-// model baseDivision {
+// model Division {
 //   id        String   @id @default(uuid())
-//   geoCode   String   @map("geo_code")
+//   geoCode   String?  @map("geo_code")
 //   name      String
-//   bnName    String   @map("bn_name")
+//   bnName    String?  @map("bn_name")
 //   url       String?
-//   status    Boolean
+//   status    Boolean  @default(true)
 //   createdAt DateTime @default(now()) @map("created_at")
 //   updatedAt DateTime @updatedAt @map("updated_at")
 
-//   @@map("base_divisions") // table name in DB
+//   districts District[]
+
+//   @@map("divisions")
 // }
+
+// model District {
+//   id         String   @id @default(uuid())
+//   divisionId String   @map("division_id")
+//   geoCode    String?  @map("geo_code")
+//   name       String
+//   bnName     String?  @map("bn_name")
+//   lat        Float?
+//   lon        Float?
+//   url        String?
+//   status     Boolean  @default(true)
+//   createdAt  DateTime @default(now()) @map("created_at")
+//   updatedAt  DateTime @updatedAt @map("updated_at")
+
+//   division       Division        @relation(fields: [divisionId], references: [id])
+//   upazilas       Upazila[]
+//   policeStations PoliceStation[]
+//   postOffices    PostOffice[]
+
+//   @@map("districts")
+// }
+
+// model Upazila {
+//   id         String   @id @default(uuid())
+//   districtId String   @map("district_id")
+//   geoCode    String?  @map("geo_code")
+//   name       String
+//   bnName     String?  @map("bn_name")
+//   url        String?
+//   status     Boolean  @default(true)
+//   createdAt  DateTime @default(now()) @map("created_at")
+//   updatedAt  DateTime @updatedAt @map("updated_at")
+
+//   district       District        @relation(fields: [districtId], references: [id])
+//   municipalities Municipality[]
+//   unions         UnionParishad[]
+//   postOffices    PostOffice[]
+
+//   @@map("upazilas")
+// }
+
+// model Municipality {
+//   id        String   @id @default(uuid())
+//   upazilaId String   @map("upazila_id")
+//   name      String
+//   bnName    String?  @map("bn_name")
+//   status    Boolean  @default(true)
+//   createdAt DateTime @default(now()) @map("created_at")
+//   updatedAt DateTime @updatedAt @map("updated_at")
+
+//   upazila Upazila @relation(fields: [upazilaId], references: [id])
+
+//   @@map("municipalities")
+// }
+
+// model UnionParishad {
+//   id        String   @id @default(uuid())
+//   upazilaId String   @map("upazila_id")
+//   name      String
+//   bnName    String?  @map("bn_name")
+//   status    Boolean  @default(true)
+//   createdAt DateTime @default(now()) @map("created_at")
+//   updatedAt DateTime @updatedAt @map("updated_at")
+
+//   upazila Upazila @relation(fields: [upazilaId], references: [id])
+
+//   @@map("union_parishads")
+// }
+
+// model PoliceStation {
+//   id         String   @id @default(uuid())
+//   districtId String   @map("district_id")
+//   geoCode    String?  @map("geo_code")
+//   url        String?
+//   bnName     String?  @map("bn_name")
+//   status     Boolean  @default(true)
+//   createdAt  DateTime @default(now()) @map("created_at")
+//   updatedAt  DateTime @updatedAt @map("updated_at")
+
+//   district District @relation(fields: [districtId], references: [id])
+
+//   @@map("police_stations")
+// }
+
+// model PostOffice {
+//   id         String   @id @default(uuid())
+//   districtId String   @map("district_id")
+//   upazilaId  String   @map("upazila_id")
+//   postOffice String   @map("post_office")
+//   postCode   String   @map("post_code")
+//   createdAt  DateTime @default(now()) @map("created_at")
+//   updatedAt  DateTime @updatedAt @map("updated_at")
+
+//   district District @relation(fields: [districtId], references: [id])
+//   upazila  Upazila  @relation(fields: [upazilaId], references: [id])
+
+//   @@map("post_offices")
+// }
+
+
+
+model BaseDivision {
+  id        Int       @id @default(autoincrement())
+  geoCode   Int       @map("geo_code")
+  name      String    @db.VarChar(50)
+  bnName    String    @map("bn_name") @db.VarChar(100)
+  url       String    @db.VarChar(300)
+  status    Int       @default(1)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  districts BaseDistrict[]
+
+  @@map("base_divisions")
+}
+
+model BaseDistrict {
+  id         Int       @id @default(autoincrement())
+  geoCode    Int       @map("geo_code")
+  divisionId Int       @map("division_id")
+  name       String    @db.VarChar(50)
+  bnName     String    @map("bn_name") @db.VarChar(100)
+  lat        String?   @db.VarChar(50)
+  lon        String?   @db.VarChar(50)
+  url        String    @db.VarChar(300)
+  status     Int       @default(1)
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt  DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  division       BaseDivision        @relation(fields: [divisionId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  upazilas       BaseUpazila[]
+  policeStations BasePoliceStation[]
+  postOffices    BasePostOffice[]
+
+  @@index([divisionId])
+  @@map("base_districts")
+}
+
+model BaseUpazila {
+  id         Int       @id @default(autoincrement())
+  geoCode    Int       @map("geo_code")
+  districtId Int       @map("district_id")
+  name       String    @db.VarChar(50)
+  bnName     String    @map("bn_name") @db.VarChar(100)
+  url        String    @db.VarChar(300)
+  status     Int       @default(1)
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt  DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  district       BaseDistrict        @relation(fields: [districtId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  unionParishads BaseUnionParishad[]
+  postOffices    BasePostOffice[]
+  municipalities BaseMunicipality[]
+
+  @@index([districtId])
+  @@map("base_upazila")
+}
+
+model BasePoliceStation {
+  id         BigInt   @id @default(autoincrement())
+  geoCode    Int?     @map("geo_code") @db.SmallInt
+  districtId Int      @map("district_id")
+  name       String   @db.VarChar(75)
+  bnName     String?  @map("bn_name") @db.VarChar(75)
+  url        String?  @db.VarChar(50)
+  status     Int      @default(1)
+
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  district BaseDistrict @relation(fields: [districtId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  userId                String               @map("user_id")
+  user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([districtId, name], name: "police_stations_district_id_name_unique")
+  @@index([name], name: "police_stations_name_index")
+  @@index([userId], name: "police_stations_user_id_foreign")
+  @@map("base_police_stations")
+}
+
+model BaseUnionParishad {
+  id        Int       @id @default(autoincrement())
+  geoCode   Int?      @map("geo_code")
+  bbsCode   Int?      @map("bbs_code")
+  upazilaId Int       @map("upazila_id")
+  name      String    @db.VarChar(50)
+  bnName    String    @map("bn_name") @db.VarChar(100)
+  url       String    @db.VarChar(300)
+  status    Int       @default(1)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  upazila BaseUpazila @relation(fields: [upazilaId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([upazilaId])
+  @@map("base_union_parishads")
+}
+
+model BasePostOffice {
+  id         Int       @id @default(autoincrement())
+  districtId Int       @map("district_id")
+  upazilaId  Int?      @map("upazila_id")
+  postOffice String    @map("post_office") @db.VarChar(50)
+  postCode   String    @map("post_code") @db.VarChar(20)
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt  DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  district BaseDistrict @relation(fields: [districtId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  upazila  BaseUpazila? @relation(fields: [upazilaId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([districtId])
+  @@index([upazilaId])
+  @@map("base_post_offices")
+}
+
+model BaseMunicipality {
+  id        Int       @id @default(autoincrement())
+  upazilaId Int       @map("upazila_id")
+  name      String    @db.VarChar(50)
+  bnName    String    @map("bn_name") @db.VarChar(100)
+  status    Int       @default(1)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  upazila BaseUpazila @relation(fields: [upazilaId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([upazilaId])
+  @@map("base_municipalities")
+}
+
+////////////////////////////////////////////////////////////////////////  Candidate Address ////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////  Candidate Education Dropdown ////////////////////////////////////////////////////////////////////////
