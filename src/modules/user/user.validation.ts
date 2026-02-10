@@ -14,11 +14,9 @@ const socialLinkSchema = z.array(
 export const userProfileSPersonalchema = z.object({
   careerTitle: z.string(),
   careerObjective: z.string(),
-  dob: z
-    .string()
-    .refine((date) => !isNaN(Date.parse(date)), {
-      message: 'Invalid date format',
-    }),
+  dob: z.string().refine((date) => !isNaN(Date.parse(date)), {
+    message: 'Invalid date format',
+  }),
   fullName: z.string(),
   fatherName: z.string(),
   motherName: z.string(),
