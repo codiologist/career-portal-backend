@@ -184,7 +184,7 @@ model CandidateExperience {
   updatedAt DateTime   @updatedAt @map("updated_at")
   documents Document[]
 
-  @@unique([userId, companyName, designation])
+  @@unique([userId, companyName, designation, department, companyBusinessType, responsibilities])
   @@map("candidate_experiences")
 }
 
