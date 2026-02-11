@@ -239,7 +239,7 @@ enum DocumentType {
 
 
 model Document {
-  id                    String               @id @default(cuid())
+  id                    String               @id @default(uuid())
 
   type                  DocumentType
   name                  String? // Certificate name or custom file name
@@ -247,7 +247,7 @@ model Document {
   size                  Int
   mimeType              String               @map("mime_type")
   createdAt             DateTime             @default(now()) @map("created_at")
-    userId                String               @map("user_id")
+  userId                String               @map("user_id") 
   user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   // Optional relation to a candidate experience
   candidateExperienceId String?              @map("candidate_experience_id")
