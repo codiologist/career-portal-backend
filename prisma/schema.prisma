@@ -170,10 +170,11 @@ model CandidateExperience {
   companyBusinessType String?   @map("company_business_type")
   location            String?
   designation         String
-  department          String?
+  department          String
   isContinue          Boolean?  @default(false) @map("is_continue")
   startDate           DateTime  @map("start_date")
   endDate             DateTime? @map("end_date")
+  responsibilities    String
 
   userId String @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -236,7 +237,6 @@ enum DocumentType {
   CERTIFICATE
   OTHER
 }
-
 
 model Document {
   id                    String               @id @default(uuid())
@@ -421,8 +421,6 @@ model Address {
 //   @@map("post_offices")
 // }
 
-
-
 model BaseDivision {
   id        Int       @id @default(autoincrement())
   geoCode   Int       @map("geo_code")
@@ -481,20 +479,20 @@ model BaseUpazila {
 }
 
 model BasePoliceStation {
-  id         BigInt   @id @default(autoincrement())
-  geoCode    Int?     @map("geo_code") @db.SmallInt
-  districtId Int      @map("district_id")
-  name       String   @db.VarChar(75)
-  bnName     String?  @map("bn_name") @db.VarChar(75)
-  url        String?  @db.VarChar(50)
-  status     Int      @default(1)
+  id         BigInt  @id @default(autoincrement())
+  geoCode    Int?    @map("geo_code") @db.SmallInt
+  districtId Int     @map("district_id")
+  name       String  @db.VarChar(75)
+  bnName     String? @map("bn_name") @db.VarChar(75)
+  url        String? @db.VarChar(50)
+  status     Int     @default(1)
 
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp(0)
-  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
 
   district BaseDistrict @relation(fields: [districtId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  userId                String               @map("user_id")
-  user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String       @map("user_id")
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([districtId, name], name: "police_stations_district_id_name_unique")
   @@index([name], name: "police_stations_name_index")

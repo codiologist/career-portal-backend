@@ -73,9 +73,11 @@ const createCandidateExperienceService = async (
     companyBusinessType: exp.companyBusinessType,
     location: exp.location,
     designation: exp.designation,
+    isContinue: exp.isContinue,
     startDate: exp.startDate,
-    endDate: exp.endDate,
+    endDate: exp.endDate ?? null,
     department: exp.department,
+    responsibilities: exp.responsibilities ?? '',
   }));
 
   const result = await prisma.candidateExperience.createMany({
@@ -99,7 +101,6 @@ const dropdown = async () => {
     bloodGroup,
   };
 };
-
 
 const me = async (user: TUserPayload) => {
   const result = await prisma.user.findUnique({
@@ -198,8 +199,6 @@ const me = async (user: TUserPayload) => {
 //   }
 // };
 
-
-
 const createCandidateEducationService = async (
   payload: any,
   user: TUserPayload,
@@ -224,5 +223,5 @@ export const UserService = {
   me,
   // getDivisionWithDistrictsAndUpazilas,
   dropdown,
-  createCandidateEducationService
+  createCandidateEducationService,
 };
