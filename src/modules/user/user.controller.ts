@@ -52,36 +52,6 @@ const dropdown = catchAsync(async (req, res) => {
   });
 });
 
-// const createCertificate = catchAsync(async (req, res) => {
-//   const files = req.files;
-
-//   const certNames = Array.isArray(req.body.certNames) ? req.body.certNames : req.body.certNames?.split(","); // if sent as comma-separated string
-//   const user = req.user
-
-//   const result = await UserService.createCertificate(user as TUserPayload, files as Express.Multer.File[], certNames)
-
-//   res.status(201).json({
-//     status: true,
-//     message: "cartificate created successfully",
-//     data: result
-//   })
-// })
-
-////// Profile create /////////
-
-////// Dropdown Data ///////////////
-
-// const getDivisionWithDistrictsAndUpazilas = catchAsync(async (req, res) => {
-
-//   const result = await UserService.getDivisionWithDistrictsAndUpazilas(req.query as {divisionId: string, districtId: string, upazilaId:string})
-
-//   res.status(201).json({
-//     status: true,
-//     message: "get all locations",
-//     data: result
-//   })
-// })
-
 const createCandidateEducation = catchAsync(async (req, res) => {
   const result = await UserService.createCandidateEducationService(
     req.body,
@@ -90,6 +60,18 @@ const createCandidateEducation = catchAsync(async (req, res) => {
   res.status(201).json({
     status: true,
     message: 'Created user Education successfully',
+    data: result,
+  });
+});
+
+const createCandidateRefrance = catchAsync(async (req, res) => {
+  const result = await UserService.createCandidateReference(
+    req.body,
+    req.user as TUserPayload,
+  );
+  res.status(201).json({
+    status: true,
+    message: 'Created user Refrance successfully',
     data: result,
   });
 });
@@ -103,4 +85,5 @@ export const UserController = {
   // getDivisionWithDistrictsAndUpazilas,
   dropdown,
   createCandidateEducation,
+  createCandidateRefrance,
 };

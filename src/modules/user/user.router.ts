@@ -26,7 +26,10 @@ router.post('/profile/personal', validationSchema(UserProfileValidation.userProf
 
 router.post('/profile/experience',validationSchema(UserProfileValidation.workExperienceArraySchema), auth(AuthGard.USER), UserController.createCandidateExperience)
 router.post('/profile/education', auth(AuthGard.USER), UserController.createCandidateEducation)
-///// candidate Profile /////////////
+
+
+
+router.post('/profile/refarance', auth(AuthGard.USER), validationSchema(UserProfileValidation.ReferanceArraySchema), UserController.createCandidateRefrance)
 
 
 /////user address /////

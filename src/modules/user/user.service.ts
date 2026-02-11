@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from '../../config/prisma';
 import { TUserPayload } from '../../types/user';
-import { TCanditateProfile, TWorkExperiece } from './user.validation';
+import { TCanditateProfile, TReferance, TWorkExperiece } from './user.validation';
 
 //////////////////////////////////////// Profile Services /////////////////////////////////////////////
 
@@ -62,27 +62,37 @@ const createCandidatePersonalService = async (
 
 const createCandidateExperienceService = async (
   payload: TWorkExperiece,
-  user: TUserPayload,
+  user: TUserPayload
 ) => {
-  console.log(payload);
+  const userId = user.id;
 
-  // Map payload to Prisma data format
-  const experiences = payload.map((exp) => ({
-    userId: user.id,
-    companyName: exp.companyName,
-    companyBusinessType: exp.companyBusinessType,
-    location: exp.location,
-    designation: exp.designation,
-    isContinue: exp.isContinue,
-    startDate: exp.startDate,
-    endDate: exp.endDate ?? null,
-    department: exp.department,
-    responsibilities: exp.responsibilities ?? '',
-  }));
+  const result = await prisma.$transaction(async (tx) => {
+    // 1️⃣ Delete old experiences
+    await tx.candidateExperience.deleteMany({
+      where: { userId },
+    });
 
-  const result = await prisma.candidateExperience.createMany({
-    data: experiences,
-    skipDuplicates: true, // optional: skip if same record exists
+    // 2️⃣ Insert new ones
+    await tx.candidateExperience.createMany({
+      data: payload.map((exp) => ({
+        userId,
+        companyName: exp.companyName,
+        companyBusinessType: exp.companyBusinessType,
+        location: exp.location,
+        designation: exp.designation,
+        isContinue: exp.isContinue,
+        startDate: new Date(exp.startDate),
+        endDate: exp.endDate ? new Date(exp.endDate) : null,
+        department: exp.department,
+        responsibilities: exp.responsibilities ?? "",
+      })),
+    });
+
+    // 3️⃣ Return updated list
+    return tx.candidateExperience.findMany({
+      where: { userId },
+      orderBy: { startDate: "desc" },
+    });
   });
 
   return result;
@@ -199,6 +209,7 @@ const me = async (user: TUserPayload) => {
 //   }
 // };
 
+
 const createCandidateEducationService = async (
   payload: any,
   user: TUserPayload,
@@ -217,6 +228,37 @@ const createCandidateEducationService = async (
   return result;
 };
 
+
+const createCandidateReference = async (payload: TReferance[],  user: TUserPayload) => {
+  const userId = user.id;
+
+  const result = await prisma.$transaction(async (tx) => {
+    // 1️⃣ Delete old references
+    await tx.candidateReference.deleteMany({
+      where: { userId },
+    });
+
+    // 2️⃣ Insert new references
+    const created = await tx.candidateReference.createMany({
+      data: payload.map((ref) => ({
+        name: ref.name,
+        designation: ref.designation,
+        phone: ref.phone,
+        emailAddress: ref.emailAddress,
+        relationship: ref.relationship,
+        userId,
+      })),
+    });
+
+    return created;
+  });
+
+  return result;
+};
+
+
+
+
 export const UserService = {
   createCandidatePersonalService,
   createCandidateExperienceService,
@@ -224,4 +266,5 @@ export const UserService = {
   // getDivisionWithDistrictsAndUpazilas,
   dropdown,
   createCandidateEducationService,
+  createCandidateReference,
 };
