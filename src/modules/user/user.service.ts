@@ -137,6 +137,7 @@ const me = async (user: TUserPayload) => {
       },
       documents: true,
       candidateExperiences: true,
+      candidateReferences: true,
     },
   });
   return result;

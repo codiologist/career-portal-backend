@@ -27,7 +27,7 @@ export const userProfileSPersonalchema = z.object({
   maritalStatus: z.string(),
   nationality: z.string(),
   nationalId: z.string(),
-  portfolioLink: z.string().url(),
+  portfolioLink: z.string().optional(),
   religionId: z.string().uuid(),
   bloodGroupId: z.string().uuid(),
   socialLink: socialLinkSchema,
