@@ -309,9 +309,9 @@ model Address {
 
   addressLine String
 
-  divisionId String?
-  districtId String?
-  upazilaId  String?
+  divisionId String
+  districtId String     
+  upazilaId  String
 
   municipalityId  String?
   unionParishadId String?

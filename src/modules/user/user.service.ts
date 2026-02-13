@@ -2,6 +2,7 @@
 import { prisma } from '../../config/prisma';
 import { TUserPayload } from '../../types/user';
 import {
+  TAddressInput,
   TCanditateProfile,
   TReferance,
   TWorkExperiece,
@@ -289,25 +290,48 @@ const getAddressDropdown = async () => {
   };
 };
 
+
+
 const createCandidateAddress = async (
-  payload: any,
+  payload: TAddressInput[],
   user: TUserPayload,
 ) => {
-  const result = await prisma.candidateAddress.create({
-    data: {
-      userId: user.id,
-      // divisionId: payload.divisionId,
-      // districtId: payload.districtId,
-      // upazilaId: payload.upazilaId,
-      // policeStationId: payload.policeStationId,
-      // municipalityId: payload.municipalityId,
-      // unionParishadId: payload.unionParishadId,
-      // addressLine: payload.addressLine,
-    },
+  const userId = user.id;
+
+  const result = await prisma.$transaction(async (tx) => {
+    // 1️⃣ Delete old addresses
+    await tx.address.deleteMany({
+      where: { userId },
+    });
+
+    // 2️⃣ Create new addresses
+    const addresses = payload.map((item) => ({
+      userId,
+      divisionId: item.divisionId,
+      districtId: item.districtId,
+      upazilaId: item.upazilaId,
+      policeStationId: item.policeStationId ?? null,
+      municipalityId: item.municipalityId ?? null,
+      unionParishadId: item.unionParishadId ?? null,
+      addressLine: item.addressLine,
+      addressTypeId: item.addressTypeId,
+      wardNo: item.wardNo ?? null,
+      zipCode: item.zipCode ?? null,
+      isSameAsPresent: item.isSameAsPresent ?? false,
+    }));
+
+    return await tx.address.createMany({
+      data: addresses,
+    });
   });
 
   return result;
 };
+
+
+
+
+
 
 export const UserService = {
   createCandidatePersonalService,
@@ -319,5 +343,4 @@ export const UserService = {
   createCandidateReference,
   getAddressDropdown, 
   createCandidateAddress
-  
 };

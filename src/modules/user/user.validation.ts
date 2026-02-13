@@ -139,11 +139,66 @@ export const referenceSchema = z.object({
 
 const ReferanceArraySchema = z.array(referenceSchema);
 
+
+/**
+ * Address Type Enum
+ */
+export const addressTypeEnum = z.enum(['PRESENT', 'PERMANENT']);
+
+/**
+ * Single Address Schema
+ */
+export const addressSchema = z
+  .object({
+    addressLine: z
+      .string()
+      .min(5, 'Address must be at least 5 characters'),
+
+    divisionId: z.string().uuid().min(1, 'Division ID must be at least 5 characters'),
+    districtId: z.string().uuid().min(1, 'District ID must be at least 5 characters'),
+    upazilaId: z.string().uuid().min(1, 'Upazila ID must be at least 5 characters'),
+
+    municipalityId: z.string().uuid().optional().nullable(),
+    unionParishadId: z.string().uuid().optional().nullable(),
+    policeStationId: z.string().uuid().optional().nullable(),
+    postOfficeId: z.string().uuid().optional().nullable(),
+
+    wardNo: z.string().max(10).optional().nullable(),
+    zipCode: z.string().max(10).optional().nullable(),
+
+    isCityCorporation: z.boolean().optional().default(false),
+    isSameAsPresent: z.boolean().optional().default(false),
+
+    addressTypeId: z
+      .string()
+      .min(5, 'Address type ID must be at least 5 characters'),
+  })
+  .refine(
+    (data) => {
+      if (data.isCityCorporation) {
+        return !!data.municipalityId;
+      }
+      return true;
+    },
+    {
+      message: 'Municipality is required when city corporation is true',
+      path: ['municipalityId'],
+    }
+  );
+
+/**
+ * Multiple Address Schema (optional)
+ */
+export const multipleAddressSchema = z.array(addressSchema).min(1);
+
+
+
 export const UserProfileValidation = {
   userProfileSPersonalchema,
   workExperienceArraySchema,
   AddressSchema,
   ReferanceArraySchema,
+  addressSchema,
 };
 
 // TypeScript type inferred from Zod
@@ -151,3 +206,11 @@ export type TCanditateProfile = z.infer<typeof userProfileSPersonalchema>;
 export type TWorkExperiece = z.infer<typeof workExperienceArraySchema>;
 export type TAddress = z.infer<typeof AddressSchema>;
 export type TReferance = z.infer<typeof referenceSchema>;
+// Single Address Type
+export type TAddressInput = z.infer<typeof addressSchema>;
+
+// Multiple Address Type
+export type TMultipleAddressInput = z.infer<typeof multipleAddressSchema>;
+
+// Address Type Enum
+export type TAddressType = z.infer<typeof addressTypeEnum>;
