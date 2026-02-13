@@ -26,15 +26,14 @@ router.post('/profile/personal', validationSchema(UserProfileValidation.userProf
 
 router.post('/profile/experience',validationSchema(UserProfileValidation.workExperienceArraySchema), auth(AuthGard.USER), UserController.createCandidateExperience)
 router.post('/profile/education', auth(AuthGard.USER), UserController.createCandidateEducation)
-
-
-
 router.post('/profile/refarance', auth(AuthGard.USER),  UserController.createCandidateRefrance)
+router.post('/profile/address', auth(AuthGard.USER), UserController.createCandidateAddress)
+
 
 
 /////user address /////
 router.get('/profile/personal/dropdown', UserController.dropdown)
-router.get('/profile/address/dropdown', UserController.getAddressDropdown)
+router.get('/profile/address/dropdown', UserController.getDivisionWithDistrictsAndUpazilas)
 
 /////user address /////
 

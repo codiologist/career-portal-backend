@@ -145,74 +145,70 @@ const me = async (user: TUserPayload) => {
 
 //////////////////////////////// Profile Services //////////////////////////////////////////////////
 
-// const getDivisionWithDistrictsAndUpazilas = async (payload: {
-//   divisionId: string;
-//   districtId: string;
-//   upazilaId: string;
-// }) => {
-//   try {
-//     const { districtId, divisionId, upazilaId } = payload;
+const getDivisionWithDistrictsAndUpazilas = async (payload: { divisionId: string; districtId: string; upazilaId: string;}) => {
+  try {
+    const { districtId, divisionId, upazilaId } = payload;
 
-//     console.log(payload);
+    console.log(payload);
 
-//     // 1️⃣ No params → return all divisions
-//     if (!divisionId && !districtId && !upazilaId) {
-//       const divisions = await prisma.division.findMany({
-//         select: { id: true, name: true },
-//       });
-//       return { level: 'division', data: divisions };
-//     }
+    // 1️⃣ No params → return all divisions
+    if (!divisionId && !districtId && !upazilaId) {
+      const divisions = await prisma.baseDivision.findMany({
+        select: { id: true, name: true },
+      });
+      return { level: 'division', data: divisions };
+    }
 
-//     // 2️⃣ Division selected → return districts
-//     if (divisionId && !districtId && !upazilaId) {
-//       const districts = await prisma.district.findMany({
-//         where: { divisionId: divisionId as string },
-//         select: { id: true, name: true },
-//       });
-//       return { level: 'district', data: districts };
-//     }
+    // 2️⃣ Division selected → return districts
+    if (divisionId && !districtId && !upazilaId) {
+      const districts = await prisma.baseDistrict.findMany({
+        where: {divisionId: Number(divisionId)  },
+        select: { id: true, name: true },
+      });
+      return { level: 'district', data: districts };
+    }
 
-//     // 3️⃣ District selected → return upazilas + police stations
-//     if (districtId && !upazilaId) {
-//       const upazilas = await prisma.upazila.findMany({
-//         where: { districtId: districtId as string },
-//         select: { id: true, name: true },
-//       });
-//       const policeStations = await prisma.policeStation.findMany({
-//         where: { districtId: districtId as string },
-//         select: { id: true, bnName: true },
-//       });
-//       return { level: 'upazila', upazilas, policeStations };
-//     }
+    // 3️⃣ District selected → return upazilas + police stations
+    if (districtId && !upazilaId) {
+      const upazilas = await prisma.baseUpazila.findMany({
+        where: { districtId: Number(districtId) },
+        select: { id: true, name: true },
+      });
+      const policeStations = await prisma.basePoliceStation.findMany({
+        where: { districtId: Number(districtId) },
+        select: { id: true, bnName: true },
+      });
+      return { level: 'upazila', upazilas, policeStations };
+    }
 
-//     // 4️⃣ Upazila selected → return municipalities, unions, post offices
-//     if (upazilaId) {
-//       const municipalities = await prisma.municipality.findMany({
-//         where: { upazilaId: upazilaId as string },
-//         select: { id: true, name: true },
-//       });
-//       const unionParishads = await prisma.unionParishad.findMany({
-//         where: { upazilaId: upazilaId as string },
-//         select: { id: true, name: true },
-//       });
-//       const postOffices = await prisma.postOffice.findMany({
-//         where: { upazilaId: upazilaId as string },
-//         select: { id: true, postOffice: true, postCode: true },
-//       });
-//       return {
-//         level: 'upazila-detail',
-//         municipalities,
-//         unionParishads,
-//         postOffices,
-//       };
-//     }
+    // 4️⃣ Upazila selected → return municipalities, unions, post offices
+    if (upazilaId) {
+      const municipalities = await prisma.baseMunicipality.findMany({
+        where: { upazilaId: Number(upazilaId)},
+        select: { id: true, name: true },
+      });
+      const unionParishads = await prisma.baseUnionParishad.findMany({
+        where: { upazilaId: Number(upazilaId)},
+        select: { id: true, name: true },
+      });
+      // const postOffices = await prisma.basePoliceStation.findMany({
+      //   where: { upazilaId: Number(upazilaId) },
+      //   select: { id: true, name: true },
+      // });
+      return {
+        level: 'upazila-detail',
+        municipalities,
+        unionParishads,
+      //  postOffices,
+      };
+    }
 
-//     return { message: 'Invalid query' };
-//   } catch (error) {
-//     console.error(error);
-//     return { message: 'Invalid query' };
-//   }
-// };
+    return { message: 'Invalid query' };
+  } catch (error) {
+    console.error(error);
+    return { message: 'Invalid query' };
+  }
+};
 
 const createCandidateEducationService = async (
   payload: any,
@@ -264,22 +260,22 @@ const createCandidateReference = async (
 };
 
 const getAddressDropdown = async () => {
-  const divisions = await prisma.division.findMany({
+  const divisions = await prisma.baseDivision.findMany({
     select: { id: true, name: true },
   });
-  const districts = await prisma.district.findMany({
+  const districts = await prisma.baseDistrict.findMany({
     select: { id: true, name: true },
   });
-  const upazilas = await prisma.upazila.findMany({
+  const upazilas = await prisma.baseUpazila.findMany({
     select: { id: true, name: true },
   });
-  const policeStations = await prisma.policeStation.findMany({
+  const policeStations = await prisma.basePoliceStation.findMany({
     select: { id: true, bnName: true },
   });
-  const municipalities = await prisma.municipality.findMany({
+  const municipalities = await prisma.baseMunicipality.findMany({
     select: { id: true, name: true },
   });
-  const unionParishads = await prisma.unionParishad.findMany({
+  const unionParishads = await prisma.baseUnionParishad.findMany({
     select: { id: true, name: true },
   });
 
@@ -293,13 +289,35 @@ const getAddressDropdown = async () => {
   };
 };
 
+const createCandidateAddress = async (
+  payload: any,
+  user: TUserPayload,
+) => {
+  const result = await prisma.candidateAddress.create({
+    data: {
+      userId: user.id,
+      // divisionId: payload.divisionId,
+      // districtId: payload.districtId,
+      // upazilaId: payload.upazilaId,
+      // policeStationId: payload.policeStationId,
+      // municipalityId: payload.municipalityId,
+      // unionParishadId: payload.unionParishadId,
+      // addressLine: payload.addressLine,
+    },
+  });
+
+  return result;
+};
+
 export const UserService = {
   createCandidatePersonalService,
   createCandidateExperienceService,
   me,
-  // getDivisionWithDistrictsAndUpazilas,
+  getDivisionWithDistrictsAndUpazilas,
   dropdown,
   createCandidateEducationService,
   createCandidateReference,
-  getAddressDropdown
+  getAddressDropdown, 
+  createCandidateAddress
+  
 };

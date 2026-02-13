@@ -228,6 +228,26 @@ model CandidateLanguage {
   @@map("candidate_languages")
 }
 
+
+model CandidateRefrance {
+  id           String @id @default(uuid())
+  name         String
+  designation  String
+  phone        String
+  emailAddress String @map("email_address")
+  relationship String
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("Candidate_refrances")
+}
+
+
+
 ///////////////////////////////////  Candidate Language ///////////////////////////////////////////
 
 ///////////////////////////////////  Candidate document ///////////////////////////////////////////
@@ -267,6 +287,9 @@ model Document {
 
 ///////////////////////////////////  Candidate Address ///////////////////////////////////////////
 
+
+
+/////////////////////////////////////////////////////////// Get divisition  /////////////////////////////////////
 model AddressType {
   id        String          @id @default(uuid())
   name      AddressTypeEnum
@@ -280,13 +303,14 @@ enum AddressTypeEnum {
   PERMANENT
 }
 
+
 model Address {
   id String @id @default(uuid())
 
   addressLine String
 
-  divisionId String
-  districtId String
+  divisionId String?
+  districtId String?
   upazilaId  String?
 
   municipalityId  String?
@@ -310,22 +334,6 @@ model Address {
   @@map("address")
 }
 
-model CandidateRefrance {
-  id           String @id @default(uuid())
-  name         String
-  designation  String
-  phone        String
-  emailAddress String @map("email_address")
-  relationship String
-
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("Candidate_refrances")
-}
 
 model BaseDivision {
   id        Int       @id @default(autoincrement())

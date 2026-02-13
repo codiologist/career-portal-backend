@@ -43,6 +43,7 @@ const createCandidateExperience = catchAsync(async (req, res) => {
   });
 });
 
+
 const dropdown = catchAsync(async (req, res) => {
   const result = await UserService.dropdown();
   res.status(201).json({
@@ -78,6 +79,20 @@ const createCandidateRefrance = catchAsync(async (req, res) => {
 
 
 
+const createCandidateAddress = catchAsync(async (req, res) => {
+  const result = await UserService.createCandidateAddress(
+    req.body,
+    req.user as TUserPayload,
+  );
+  res.status(201).json({
+    status: true,
+    message: 'Created user Address successfully',
+    data: result,
+  });
+} );
+  
+
+
 
 
 const getAddressDropdown = catchAsync(async (req, res) => {
@@ -89,15 +104,30 @@ const getAddressDropdown = catchAsync(async (req, res) => {
   });
 });
 
+const getDivisionWithDistrictsAndUpazilas = catchAsync(async (req, res) => {
+
+  const  query = req.query as { divisionId: string; districtId: string; upazilaId: string };
+
+
+
+  const result = await UserService.getDivisionWithDistrictsAndUpazilas(query);
+  res.status(201).json({
+    status: true,
+    message: 'get all division/district/upazila successfully',
+    data: result,
+  });
+});
+
 export const UserController = {
   createCandidatePersonal,
   createCandidateExperience,
   me,
 
   //// Dropdown query
-  // getDivisionWithDistrictsAndUpazilas,
+  getDivisionWithDistrictsAndUpazilas,
   dropdown,
   createCandidateEducation,
   createCandidateRefrance,
-  getAddressDropdown
+  getAddressDropdown, 
+  createCandidateAddress
 };
