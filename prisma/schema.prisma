@@ -37,7 +37,6 @@ model User {
   candidateLanguages   CandidateLanguage[]
   addresses            Address[]
   documents            Document[]
-  policeStations       BasePoliceStation[]
   candidateRefrance    CandidateRefrance[]
 
   @@index([id, email])
@@ -398,12 +397,9 @@ model BasePoliceStation {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
 
   district BaseDistrict @relation(fields: [districtId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  userId   String       @map("user_id")
-  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([districtId, name], name: "police_stations_district_id_name_unique")
   @@index([name], name: "police_stations_name_index")
-  @@index([userId], name: "police_stations_user_id_foreign")
   @@map("base_police_stations")
 }
 
