@@ -166,7 +166,7 @@ CREATE TABLE "candidate_languages" (
 );
 
 -- CreateTable
-CREATE TABLE "Candidate_refrances" (
+CREATE TABLE "Candidate_references" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "designation" TEXT NOT NULL,
@@ -177,7 +177,7 @@ CREATE TABLE "Candidate_refrances" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Candidate_refrances_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Candidate_references_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -433,7 +433,7 @@ ALTER TABLE "candidate_references" ADD CONSTRAINT "candidate_references_user_id_
 ALTER TABLE "candidate_languages" ADD CONSTRAINT "candidate_languages_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Candidate_refrances" ADD CONSTRAINT "Candidate_refrances_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Candidate_references" ADD CONSTRAINT "Candidate_references_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "documents" ADD CONSTRAINT "documents_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

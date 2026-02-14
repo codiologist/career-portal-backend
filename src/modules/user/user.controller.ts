@@ -43,7 +43,6 @@ const createCandidateExperience = catchAsync(async (req, res) => {
   });
 });
 
-
 const dropdown = catchAsync(async (req, res) => {
   const result = await UserService.dropdown();
   res.status(201).json({
@@ -65,14 +64,14 @@ const createCandidateEducation = catchAsync(async (req, res) => {
   });
 });
 
-const createCandidateRefrance = catchAsync(async (req, res) => {
+const createCandidateReference = catchAsync(async (req, res) => {
   const result = await UserService.createCandidateReference(
     req.body,
     req.user as TUserPayload,
   );
   res.status(201).json({
     status: true,
-    message: 'Created user Refrance successfully',
+    message: 'Created user Reference successfully',
     data: result,
   });
 });
@@ -87,8 +86,8 @@ const createCandidateAddress = catchAsync(async (req, res) => {
     message: 'Created user Address successfully',
     data: result,
   });
-} );
-  
+});
+
 const getAddressDropdown = catchAsync(async (req, res) => {
   const result = await UserService.getAddressDropdown();
   res.status(201).json({
@@ -99,10 +98,11 @@ const getAddressDropdown = catchAsync(async (req, res) => {
 });
 
 const getDivisionWithDistrictsAndUpazilas = catchAsync(async (req, res) => {
-
-  const  query = req.query as { divisionId: string; districtId: string; upazilaId: string };
-
-
+  const query = req.query as {
+    divisionId: string;
+    districtId: string;
+    upazilaId: string;
+  };
 
   const result = await UserService.getDivisionWithDistrictsAndUpazilas(query);
   res.status(201).json({
@@ -122,10 +122,7 @@ const createCandidateAchievement = catchAsync(async (req, res) => {
     message: 'Created user Achievement successfully',
     data: result,
   });
-} );
-
-
-
+});
 
 export const UserController = {
   createCandidatePersonal,
@@ -136,8 +133,8 @@ export const UserController = {
   getDivisionWithDistrictsAndUpazilas,
   dropdown,
   createCandidateEducation,
-  createCandidateRefrance,
-  getAddressDropdown, 
-  createCandidateAddress, 
-  createCandidateAchievement
+  createCandidateReference,
+  getAddressDropdown,
+  createCandidateAddress,
+  createCandidateAchievement,
 };

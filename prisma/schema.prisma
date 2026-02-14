@@ -35,7 +35,7 @@ model User {
   candidateExperiences  CandidateExperience[]
   candidateReferences   CandidateReference[]
   candidateLanguages    CandidateLanguage[]
-  candidateRefrance     CandidateRefrance[]
+  candidateReference    CandidateReference[]
   candidateAchievements CandidateAchievement[]
   addresses             Address[]
   documents             Document[]
@@ -229,7 +229,7 @@ model CandidateLanguage {
   @@map("candidate_languages")
 }
 
-model CandidateRefrance {
+model CandidateReference {
   id           String @id @default(uuid())
   name         String
   designation  String
@@ -243,7 +243,7 @@ model CandidateRefrance {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("Candidate_refrances")
+  @@map("Candidate_references")
 }
 
 enum AchievementType {
@@ -268,7 +268,7 @@ model CandidateAchievement {
   url              String?
   location         String
   year             Int
-  description      String          
+  description      String
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
