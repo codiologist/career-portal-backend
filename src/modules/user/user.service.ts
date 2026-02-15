@@ -147,7 +147,11 @@ const me = async (user: TUserPayload) => {
 
 //////////////////////////////// Profile Services //////////////////////////////////////////////////
 
-const getDivisionWithDistrictsAndUpazilas = async (payload: { divisionId: string; districtId: string; upazilaId: string;}) => {
+const getDivisionWithDistrictsAndUpazilas = async (payload: {
+  divisionId: string;
+  districtId: string;
+  upazilaId: string;
+}) => {
   try {
     const { districtId, divisionId, upazilaId } = payload;
 
@@ -164,7 +168,7 @@ const getDivisionWithDistrictsAndUpazilas = async (payload: { divisionId: string
     // 2️⃣ Division selected → return districts
     if (divisionId && !districtId && !upazilaId) {
       const districts = await prisma.baseDistrict.findMany({
-        where: {divisionId: Number(divisionId)  },
+        where: { divisionId: Number(divisionId) },
         select: { id: true, name: true },
       });
       return { level: 'district', data: districts };
@@ -178,19 +182,23 @@ const getDivisionWithDistrictsAndUpazilas = async (payload: { divisionId: string
       });
       const policeStations = await prisma.basePoliceStation.findMany({
         where: { districtId: Number(districtId) },
-        select: { id: true, bnName: true },
+        select: { id: true, name: true, bnName: true },
       });
-      return { level: 'upazila', upazilas, policeStations };
+      const postOffices = await prisma.basePostOffice.findMany({
+        where: { districtId: Number(districtId) },
+        select: { id: true, postOffice: true, postCode: true },
+      });
+      return { level: 'upazila', upazilas, policeStations, postOffices };
     }
 
     // 4️⃣ Upazila selected → return municipalities, unions, post offices
     if (upazilaId) {
       const municipalities = await prisma.baseMunicipality.findMany({
-        where: { upazilaId: Number(upazilaId)},
+        where: { upazilaId: Number(upazilaId) },
         select: { id: true, name: true },
       });
       const unionParishads = await prisma.baseUnionParishad.findMany({
-        where: { upazilaId: Number(upazilaId)},
+        where: { upazilaId: Number(upazilaId) },
         select: { id: true, name: true },
       });
       // const postOffices = await prisma.basePoliceStation.findMany({
@@ -201,7 +209,7 @@ const getDivisionWithDistrictsAndUpazilas = async (payload: { divisionId: string
         level: 'upazila-detail',
         municipalities,
         unionParishads,
-      //  postOffices,
+        //  postOffices,
       };
     }
 
@@ -327,15 +335,13 @@ const createCandidateAddress = async (
   return result;
 };
 
-
 const createCandidateAchievement = async (
   payload: TAchievementInput[],
   user: TUserPayload,
 ) => {
   const userId = user.id;
 
-
-  console.log(payload)
+  console.log(payload);
   const result = await prisma.$transaction(async (tx) => {
     // Delete old achievements
     await tx.candidateAchievement.deleteMany({
@@ -362,10 +368,6 @@ const createCandidateAchievement = async (
   return result;
 };
 
-
-
-
-
 export const UserService = {
   createCandidatePersonalService,
   createCandidateExperienceService,
@@ -374,7 +376,7 @@ export const UserService = {
   dropdown,
   createCandidateEducationService,
   createCandidateReference,
-  getAddressDropdown, 
-  createCandidateAddress, 
-  createCandidateAchievement
+  getAddressDropdown,
+  createCandidateAddress,
+  createCandidateAchievement,
 };

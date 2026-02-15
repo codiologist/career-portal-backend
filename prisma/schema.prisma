@@ -229,23 +229,6 @@ model CandidateLanguage {
   @@map("candidate_languages")
 }
 
-model CandidateReference {
-  id           String @id @default(uuid())
-  name         String
-  designation  String
-  phone        String
-  emailAddress String @map("email_address")
-  relationship String
-
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("Candidate_references")
-}
-
 enum AchievementType {
   PROFESSIONAL_CERTIFICATION
   TRAINING
