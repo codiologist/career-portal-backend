@@ -57,9 +57,18 @@ router.post(
   UserController.createCandidateAchievement,
 );
 
+router.post(
+  '/profile/address',
+  auth(AuthGard.USER),
+  UserController.createCandidateAddress,
+);
+
 /////user address /////
 router.get('/profile/personal/dropdown', UserController.dropdown);
-router.get('/profile/address/dropdown',UserController.getDivisionWithDistrictsAndUpazilas);
+router.get(
+  '/profile/address/dropdown',
+  UserController.getDivisionWithDistrictsAndUpazilas,
+);
 
 /////user address /////
 

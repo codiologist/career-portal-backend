@@ -1,5 +1,5 @@
 
- -- blood_groups
+ -- religions
 INSERT INTO religions (id, name) VALUES
 (gen_random_uuid(), 'Islam'),
 (gen_random_uuid(), 'Hinduism'),

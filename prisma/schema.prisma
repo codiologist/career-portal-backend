@@ -320,24 +320,21 @@ enum AddressTypeEnum {
 model Address {
   id String @id @default(uuid())
 
-  addressLine String @map("address_line")
-
   divisionId String @map("division_id")
   districtId String @map("district_id")
 
-  upazilaId  String? @map("upazila_id")
-  cityCorporation  String? @map("city_corporation") 
+  upazilaId       String? @map("upazila_id")
+  cityCorporation String? @map("city_corporation")
 
   municipalityId  String? @map("municipality_id")
   unionParishadId String? @map("union_parishad_id")
   policeStationId String? @map("police_station_id")
   postOfficeId    String? @map("post_office_id")
 
-  wardNo  String? @map("ward_no")
-  zipCode String? @map("zip_code")
+  wardNo      String? @map("ward_no")
+  addressLine String  @map("address_line")
 
-  isCityCorporation Boolean @default(false) @map("is_city_corporation")
-  isSameAsPresent   Boolean @default(false) @map("is_same_as_present")
+  isSameAsPresent Boolean @default(false) @map("is_same_as_present")
 
   userId        String @map("user_id")
   addressTypeId String @map("address_type_id")

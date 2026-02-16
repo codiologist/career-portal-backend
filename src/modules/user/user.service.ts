@@ -178,7 +178,7 @@ const getDivisionWithDistrictsAndUpazilas = async (payload: {
     if (districtId && !upazilaId) {
       const upazilas = await prisma.baseUpazila.findMany({
         where: { districtId: Number(districtId) },
-        select: { id: true, name: true, districtId: true },
+        select: { id: true, name: true, districtId: true, geoCode: true },
       });
       const policeStations = await prisma.basePoliceStation.findMany({
         where: { districtId: Number(districtId) },
@@ -215,11 +215,11 @@ const getDivisionWithDistrictsAndUpazilas = async (payload: {
     if (upazilaId) {
       const municipalities = await prisma.baseMunicipality.findMany({
         where: { upazilaId: Number(upazilaId) },
-        select: { id: true, name: true, upazilaId: true },
+        select: { id: true, name: true, upazilaId: true, geoCode: true },
       });
       const unionParishads = await prisma.baseUnionParishad.findMany({
         where: { upazilaId: Number(upazilaId) },
-        select: { id: true, name: true, upazilaId: true },
+        select: { id: true, name: true, upazilaId: true, geoCode: true },
       });
       // const postOffices = await prisma.basePoliceStation.findMany({
       //   where: { upazilaId: Number(upazilaId) },
@@ -289,7 +289,6 @@ const createCandidateReference = async (
   return result;
 };
 
-
 const createCandidateAddress = async (
   payload: TAddressInput[],
   user: TUserPayload,
@@ -307,10 +306,11 @@ const createCandidateAddress = async (
       userId,
       divisionId: item.divisionId,
       districtId: item.districtId,
-      upazilaOrCityCorpId: item.upazilaOrCityCorpId,
-      unionParishadOrMunicipalityId: item.unionParishadOrMunicipalityId ?? null,
+      cityCorporationId: item.cityCorporationId ?? null,
+      upazilaId: item.upazilaId,
+      unionParishadId: item.unionParishadId ?? null,
+      municipalityId: item.municipalityId ?? null,
       policeStationId: item.policeStationId ?? null,
-      zipCode: item.zipCode ?? null,
       wardNo: item.wardNo ?? null,
       addressLine: item.addressLine,
       isSameAsPresent: item.isSameAsPresent ?? false,

@@ -126,34 +126,18 @@ const ReferanceArraySchema = z.array(referenceSchema);
 
 export const addressTypeEnum = z.enum(['PRESENT', 'PERMANENT']);
 
-const AddressSchema = z.object({
-  id: z.string().uuid().optional(),
-  addressLine: z.string().min(1, 'Address line is required'),
-  divisionId: z.string().uuid(),
-  districtId: z.string().uuid(),
-  upazilaOrCityCorpId: z.string().uuid().nullable().optional(),
-  unionParishadOrMunicipalityId: z.string().uuid().nullable().optional(),
-  policeStationId: z.string().uuid().nullable().optional(),
-  postOfficeId: z.string().uuid().nullable().optional(),
-  wardNo: z.string().nullable().optional(),
-  isSameAsPresent: z.boolean().default(false),
-  addressTypeId: addressTypeEnum,
-});
-
 /**
  * Single Address Schema
  */
-export const addressSchema = z.object({
+export const AddressSchema = z.object({
   divisionId: z.string().min(1, 'Division ID must be at least 5 characters'),
   districtId: z.string().min(1, 'District ID must be at least 5 characters'),
-  upazilaOrCityCorpId: z
-    .string()
-    .min(1, 'Upazila/City Corporation ID must be at least 5 characters'),
-  unionParishadOrMunicipalityId: z.string().uuid().optional().nullable(),
-  policeStationId: z.string().uuid().optional().nullable(),
-  postOfficeId: z.string().uuid().optional().nullable(),
-  zipCode: z.string().max(10).optional().nullable(),
-
+  upazilaId: z.string().optional().nullable(),
+  cityCorporationId: z.string().optional().nullable(),
+  unionParishadId: z.string().optional().nullable(),
+  municipalityId: z.string().optional().nullable(),
+  policeStationId: z.string().optional().nullable(),
+  postOfficeId: z.string().optional().nullable(),
   wardNo: z.string().max(10).optional().nullable(),
   addressLine: z.string().min(5, 'Address must be at least 5 characters'),
   isSameAsPresent: z.boolean().optional().default(false),
@@ -165,7 +149,7 @@ export const addressSchema = z.object({
 /**
  * Multiple Address Schema (optional)
  */
-export const multipleAddressSchema = z.array(addressSchema).min(1);
+export const multipleAddressSchema = z.array(AddressSchema).min(1);
 
 export const achievementTypeEnum = z.enum([
   'PROFESSIONAL_CERTIFICATION',
@@ -213,7 +197,7 @@ export const UserProfileValidation = {
   workExperienceArraySchema,
   AddressSchema,
   ReferanceArraySchema,
-  addressSchema,
+
   multipleAchievementSchema,
 };
 
@@ -223,7 +207,7 @@ export type TWorkExperiece = z.infer<typeof workExperienceArraySchema>;
 export type TAddress = z.infer<typeof AddressSchema>;
 export type TReferance = z.infer<typeof referenceSchema>;
 // Single Address Type
-export type TAddressInput = z.infer<typeof addressSchema>;
+export type TAddressInput = z.infer<typeof AddressSchema>;
 
 // Multiple Address Type
 export type TMultipleAddressInput = z.infer<typeof multipleAddressSchema>;
