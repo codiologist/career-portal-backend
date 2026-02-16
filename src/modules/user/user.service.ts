@@ -140,6 +140,7 @@ const me = async (user: TUserPayload) => {
       documents: true,
       candidateExperiences: true,
       candidateReferences: true,
+      addresses: true,
     },
   });
   return result;

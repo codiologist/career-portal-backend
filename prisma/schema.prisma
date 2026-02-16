@@ -323,8 +323,8 @@ model Address {
   divisionId String @map("division_id")
   districtId String @map("district_id")
 
-  upazilaId       String? @map("upazila_id")
-  cityCorporation String? @map("city_corporation")
+  upazilaId         String? @map("upazila_id")
+  cityCorporationId String? @map("city_corporation_id")
 
   municipalityId  String? @map("municipality_id")
   unionParishadId String? @map("union_parishad_id")
