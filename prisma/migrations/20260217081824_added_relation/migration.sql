@@ -216,18 +216,16 @@ CREATE TABLE "address_types" (
 -- CreateTable
 CREATE TABLE "address" (
     "id" TEXT NOT NULL,
-    "address_line" TEXT NOT NULL,
-    "division_id" TEXT NOT NULL,
-    "district_id" TEXT NOT NULL,
-    "upazila_id" TEXT,
-    "city_corporation" TEXT,
-    "municipality_id" TEXT,
-    "union_parishad_id" TEXT,
-    "police_station_id" TEXT,
-    "post_office_id" TEXT,
+    "division_id" INTEGER NOT NULL,
+    "district_id" INTEGER NOT NULL,
+    "upazila_id" INTEGER,
+    "city_corporation_id" INTEGER,
+    "municipality_id" INTEGER,
+    "union_parishad_id" INTEGER,
+    "police_station_id" INTEGER,
+    "post_office_id" INTEGER,
     "ward_no" TEXT,
-    "zip_code" TEXT,
-    "is_city_corporation" BOOLEAN NOT NULL DEFAULT false,
+    "address_line" TEXT NOT NULL,
     "is_same_as_present" BOOLEAN NOT NULL DEFAULT false,
     "user_id" TEXT NOT NULL,
     "address_type_id" TEXT NOT NULL,
@@ -296,7 +294,7 @@ CREATE TABLE "base_upazilas" (
 
 -- CreateTable
 CREATE TABLE "base_police_stations" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "geo_code" TEXT NOT NULL,
     "district_id" INTEGER NOT NULL,
     "name" VARCHAR(75) NOT NULL,
@@ -475,6 +473,30 @@ ALTER TABLE "address" ADD CONSTRAINT "address_user_id_fkey" FOREIGN KEY ("user_i
 
 -- AddForeignKey
 ALTER TABLE "address" ADD CONSTRAINT "address_address_type_id_fkey" FOREIGN KEY ("address_type_id") REFERENCES "address_types"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "address" ADD CONSTRAINT "address_division_id_fkey" FOREIGN KEY ("division_id") REFERENCES "base_divisions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "address" ADD CONSTRAINT "address_district_id_fkey" FOREIGN KEY ("district_id") REFERENCES "base_districts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "address" ADD CONSTRAINT "address_upazila_id_fkey" FOREIGN KEY ("upazila_id") REFERENCES "base_upazilas"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "address" ADD CONSTRAINT "address_city_corporation_id_fkey" FOREIGN KEY ("city_corporation_id") REFERENCES "base_city_corporations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "address" ADD CONSTRAINT "address_municipality_id_fkey" FOREIGN KEY ("municipality_id") REFERENCES "base_municipalities"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "address" ADD CONSTRAINT "address_union_parishad_id_fkey" FOREIGN KEY ("union_parishad_id") REFERENCES "base_union_parishads"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "address" ADD CONSTRAINT "address_police_station_id_fkey" FOREIGN KEY ("police_station_id") REFERENCES "base_police_stations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "address" ADD CONSTRAINT "address_post_office_id_fkey" FOREIGN KEY ("post_office_id") REFERENCES "base_post_offices"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "base_districts" ADD CONSTRAINT "base_districts_division_id_fkey" FOREIGN KEY ("division_id") REFERENCES "base_divisions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

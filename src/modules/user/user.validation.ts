@@ -129,23 +129,41 @@ export const addressTypeEnum = z.enum(['PRESENT', 'PERMANENT']);
 /**
  * Single Address Schema
  */
+
+
 export const AddressSchema = z.object({
-  divisionId: z.string().min(1, 'Division ID must be at least 5 characters'),
-  districtId: z.string().min(1, 'District ID must be at least 5 characters'),
-  upazilaId: z.string().optional().nullable(),
-  cityCorporationId: z.string().optional().nullable(),
-  unionParishadId: z.string().optional().nullable(),
-  municipalityId: z.string().optional().nullable(),
-  policeStationId: z.string().optional().nullable(),
-  postOfficeId: z.string().optional().nullable(),
-  wardNo: z.string().max(10).optional().nullable(),
-  addressLine: z.string().min(5, 'Address must be at least 5 characters'),
+  divisionId: z
+    .number()
+    .int("Division must be a valid number"),
+
+  districtId: z
+    .number()
+    .int("District must be a valid number"),
+
+  upazilaId: z.number().int().optional().nullable(),
+  cityCorporationId: z.number().int().optional().nullable(),
+  unionParishadId: z.number().int().optional().nullable(),
+  municipalityId: z.number().int().optional().nullable(),
+  policeStationId: z.number().int().optional().nullable(),
+  postOfficeId: z.number().int().optional().nullable(),
+
+  wardNo: z
+    .string()
+    .max(10, "Ward number cannot exceed 10 characters")
+    .optional()
+    .nullable(),
+
+  addressLine: z
+    .string()
+    .min(5, "Address must be at least 5 characters"),
+
   isSameAsPresent: z.boolean().optional().default(false),
 
   addressTypeId: z
     .string()
-    .min(5, 'Address type ID must be at least 5 characters'),
+    .min(5, "Address type ID must be at least 5 characters"),
 });
+
 /**
  * Multiple Address Schema (optional)
  */

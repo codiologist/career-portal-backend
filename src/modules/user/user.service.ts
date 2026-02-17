@@ -142,6 +142,21 @@ const me = async (user: TUserPayload) => {
           socialLink: true,
         },
       },
+      addresses: {
+        include : {
+          district: {
+            select: {
+              name: true
+            }
+          }, 
+          upazila: {
+            select: {
+              name: true
+            }
+          }
+          
+        }
+      },
       documents: true,
       candidateExperiences: true,
       candidateReferences: true,
@@ -150,6 +165,9 @@ const me = async (user: TUserPayload) => {
 
   // const address = await prisma.address.findMany({
   //   where: { userId: result?.id },
+  //   include: {
+  //     district: true
+  //   }
   // });
 
   return result;
@@ -310,6 +328,7 @@ const createCandidateAddress = async (
     await tx.address.deleteMany({
       where: { userId },
     });
+
 
     // 2️⃣ Create new addresses
     const addresses = payload.map((item) => ({
