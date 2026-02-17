@@ -143,19 +143,18 @@ const me = async (user: TUserPayload) => {
         },
       },
       addresses: {
-        include : {
+        include: {
           district: {
             select: {
-              name: true
-            }
-          }, 
+              name: true,
+            },
+          },
           upazila: {
             select: {
-              name: true
-            }
-          }
-          
-        }
+              name: true,
+            },
+          },
+        },
       },
       documents: true,
       candidateExperiences: true,
@@ -329,7 +328,6 @@ const createCandidateAddress = async (
       where: { userId },
     });
 
-
     // 2️⃣ Create new addresses
     const addresses = payload.map((item) => ({
       userId,
@@ -339,6 +337,7 @@ const createCandidateAddress = async (
       upazilaId: item.upazilaId,
       unionParishadId: item.unionParishadId ?? null,
       municipalityId: item.municipalityId ?? null,
+      postOfficeId: item.postOfficeId ?? null,
       policeStationId: item.policeStationId ?? null,
       wardNo: item.wardNo ?? null,
       addressLine: item.addressLine,
