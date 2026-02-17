@@ -254,9 +254,10 @@ model CandidateAchievement {
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents Document[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@map("candidate_achievements")
 }
@@ -294,6 +295,9 @@ model Document {
 
   candidateEducationId String?             @map("candidate_education_id")
   candidateEducation   CandidateEducation? @relation(fields: [candidateEducationId], references: [id], onDelete: Cascade)
+
+  candidateAchievementId String?               @map("candidate_achievement_id")
+  candidateAchievement   CandidateAchievement? @relation(fields: [candidateAchievementId], references: [id], onDelete: Cascade)
 
   @@unique([userId, name], name: "userId_name") // prevents duplicate certificate names per user
   @@index([userId])
@@ -433,7 +437,7 @@ model BaseUpazila {
 }
 
 model BasePoliceStation {
-  id         Int  @id @default(autoincrement())
+  id         Int     @id @default(autoincrement())
   geoCode    String  @map("geo_code")
   districtId Int     @map("district_id")
   name       String  @db.VarChar(75)

@@ -113,6 +113,13 @@ const getDivisionWithDistrictsAndUpazilas = catchAsync(async (req, res) => {
 });
 
 const createCandidateAchievement = catchAsync(async (req, res) => {
+
+  const files = req.files
+
+  console.log(files)
+
+
+  return
   const result = await UserService.createCandidateAchievement(
     req.body,
     req.user as TUserPayload,

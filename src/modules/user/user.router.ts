@@ -9,6 +9,7 @@ import {
   multipleAchievementSchema,
   UserProfileValidation,
 } from './user.validation';
+import { upload, uploadArray } from '../../utils/uploadFileSystem';
 
 // import { validationSchema } from '../../middlewares/validationSchema';
 // import { profileSchema } from './user.validation';
@@ -53,7 +54,8 @@ router.post(
 router.post(
   '/profile/achievement',
   auth(AuthGard.USER),
-  validationSchema(multipleAchievementSchema),
+   upload.single('certificate'),
+  // validationSchema(multipleAchievementSchema),
   UserController.createCandidateAchievement,
 );
 

@@ -8,7 +8,7 @@ export interface CustomFile extends Express.Multer.File {
   documentName?: string | null;
 }
 
-
+///// this is for single use
 
 const storage = multer.diskStorage({
   destination(req, file, cb) {
@@ -65,4 +65,40 @@ const storage = multer.diskStorage({
 
 
 
-export const upload = multer({ storage });
+
+
+const storageArray = multer.diskStorage({
+  destination(req, file, cb) {
+    const user = req.user as JwtPayload;
+    const userId = user?.id;
+
+
+    if (!userId) return cb(new Error("User ID required"), "");
+
+    let folder = "others";
+
+    if (file.fieldname.startsWith("certificate_")) {
+      folder = "certificates";
+    }
+
+    const uploadPath = path.join("uploads", "users", userId, folder);
+    fs.mkdirSync(uploadPath, { recursive: true });
+
+    cb(null, uploadPath);
+  },
+
+  filename(req, file, cb) {
+    const ext = path.extname(file.originalname);
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${unique}${ext}`);
+  },
+});
+
+
+
+
+
+
+export const uploadArray = multer({ storage: storageArray });
+export const upload = multer({storage});
+

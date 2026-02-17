@@ -305,11 +305,7 @@ const createCandidateEducationService = async (
   const result = await prisma.candidateEducation.create({
     data: {
       userId: user.id,
-      // institutionName: payload.institutionName,
-      // degree: payload.degree,
-      // fieldOfStudy: payload.fieldOfStudy,
-      // startDate: payload.startDate,
-      // endDate: payload.endDate,
+      
     },
   });
 
@@ -416,6 +412,9 @@ const createCandidateAchievement = async (
 
   return result;
 };
+
+
+
 
 export const UserService = {
   createCandidatePersonalService,
