@@ -1,4 +1,5 @@
 import { TUserPayload } from '../../types/user';
+import { AppError } from '../../utils/AppError';
 import { catchAsync } from '../../utils/catchAsync';
 import { UserService } from './user.service';
 import { UserProfileValidation } from './user.validation';
@@ -87,7 +88,9 @@ const createCandidateAchievement = catchAsync(async (req, res) => {
 
   const files = req.files as Express.Multer.File[];
 
+
   const data = JSON.parse(req.body.data)
+  console.log(data)
 
   const validation = UserProfileValidation.multipleAchievementSchema.parse(data)
 

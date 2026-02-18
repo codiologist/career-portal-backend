@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from '../../config/prisma';
 import { TUserPayload } from '../../types/user';
+import { AppError } from '../../utils/AppError';
 import {
   TAchievementInput,
   TAddressInput,
@@ -104,92 +105,7 @@ const createCandidateExperienceService = async (
   return result;
 };
 
-const me = async (user: TUserPayload) => {
-  const result = await prisma.user.findUnique({
-    where: { email: user.email },
-    select: {
-      id: true,
-      fullName: true,
-      email: true,
-      phone: true,
-      role: true,
-      createdAt: true,
-      candidatePersonal: {
-        include: {
-          religion: true,
-          interests: true,
-          bloodGroup: true,
-          skills: true,
-          socialLink: true,
-        },
-      },
-      addresses: {
-        include: {
-          division: {
-            select: {
-              name: true,
-            },
-          },
-          district: {
-            select: {
-              name: true,
-            },
-          },
-          upazila: {
-            select: {
-              name: true,
-            },
-          },
-          cityCorporation: {
-            select: {
-              name: true,
-            },
-          },
-          unionParishad: {
-            select: {
-              name: true,
-            },
-          },
-          municipality: {
-            select: {
-              name: true,
-            },
-          },
-          policeStation: {
-            select: {
-              name: true,
-            },
-          },
-          postOffice: {
-            select: {
-              postOffice: true,
-              postCode: true,
-            },
-          },
-        },
-      },
-      documents: true,
-      candidateExperiences: true,
-      candidateReferences: true,
-      candidateAchievements: {
-        include: {
-          documents: true
-        }
-      },
-    },
-  });
 
-  // const address = await prisma.address.findMany({
-  //   where: { userId: result?.id },
-  //   include: {
-  //     district: true
-  //   }
-  // });
-
-  return result;
-};
-
-//////////////////////////////// Profile Services //////////////////////////////////////////////////
 
 const createCandidateEducationService = async (
   payload: any,
@@ -198,7 +114,7 @@ const createCandidateEducationService = async (
   const result = await prisma.candidateEducation.create({
     data: {
       userId: user.id,
-      
+
     },
   });
 
@@ -278,9 +194,17 @@ const createCandidateAchievement = async (
   files: Express.Multer.File[],
   user: TUserPayload,
 ) => {
+  if (files.length < 0) {
+    throw new AppError(500, "files not found please select files")
+  }
+
+
+
+
   const userId = user.id;
 
   console.log(payload, files, user)
+
 
   const result = await prisma.$transaction(async (tx) => {
     // 1️⃣ Delete old achievements + documents
@@ -309,6 +233,9 @@ const createCandidateAchievement = async (
           location: item.location,
           year: item.year,
         },
+        include: {
+          documents: true
+        }
       });
 
       createdAchievements.push(achievement);
@@ -337,6 +264,95 @@ const createCandidateAchievement = async (
   return result;
 };
 
+const me = async (user: TUserPayload) => {
+  const result = await prisma.user.findUnique({
+    where: { email: user.email },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phone: true,
+      role: true,
+      createdAt: true,
+      candidatePersonal: {
+        include: {
+          religion: true,
+          interests: true,
+          bloodGroup: true,
+          skills: true,
+          socialLink: true,
+        },
+      },
+      addresses: {
+        include: {
+          division: {
+            select: {
+              name: true,
+            },
+          },
+          district: {
+            select: {
+              name: true,
+            },
+          },
+          upazila: {
+            select: {
+              name: true,
+            },
+          },
+          cityCorporation: {
+            select: {
+              name: true,
+            },
+          },
+          unionParishad: {
+            select: {
+              name: true,
+            },
+          },
+          municipality: {
+            select: {
+              name: true,
+            },
+          },
+          policeStation: {
+            select: {
+              name: true,
+            },
+          },
+          postOffice: {
+            select: {
+              postOffice: true,
+              postCode: true,
+            },
+          },
+        },
+      },
+      documents: true,
+      candidateExperiences: true,
+      candidateReferences: true,
+      candidateAchievements: {
+        include: {
+          documents: {
+            where: {
+              isDeleted: false
+            }
+          }
+        }
+      }
+    },
+  });
+
+  // const address = await prisma.address.findMany({
+  //   where: { userId: result?.id },
+  //   include: {
+  //     district: true
+  //   }
+  // });
+
+  return result;
+};
+//////////////////////////////// Profile Services //////////////////////////////////////////////////
 
 //////////////////////////////////// dropdown //////////////////////////////////////////
 

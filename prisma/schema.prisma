@@ -256,10 +256,10 @@ model CandidateReference {
   id String @id @default(uuid())
 
   name         String
-  companyName  String? @map("company_name") 
+  companyName  String? @map("company_name")
   designation  String
   phone        String
-  emailAddress String @map("email_address")
+  emailAddress String  @map("email_address")
   relationship String
 
   userId String @map("user_id")
@@ -346,6 +346,7 @@ model Document {
   path                  String
   size                  Int
   mimeType              String               @map("mime_type")
+  isDeleted             Boolean              @default(false) @map("is_deleted")
   createdAt             DateTime             @default(now()) @map("created_at")
   userId                String               @map("user_id")
   user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -7,6 +7,7 @@ import { prisma } from '../../config/prisma';
 import { JwtPayload } from 'jsonwebtoken';
 import { AuthGard } from '../../utils/constant/auth.Constant';
 import { documentSchema } from './upload.validation';
+import { UploadController } from './upload.controller';
 
 const router = express.Router();
 
@@ -236,6 +237,12 @@ router.post(
     res.json({ message: 'File uploaded successfully', file });
   },
 );
+
+
+router.delete('/user/other/delete/:id', auth('USER'), UploadController.deleteDocumentSingle);
+
+
+
 ////////// Upload //////////
 
 export const UploadRouter = router;
