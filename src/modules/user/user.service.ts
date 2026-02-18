@@ -190,6 +190,11 @@ const me = async (user: TUserPayload) => {
       documents: true,
       candidateExperiences: true,
       candidateReferences: true,
+      candidateAchievements: {
+        include: {
+          documents: true
+        }
+      },
     },
   });
 
@@ -382,37 +387,67 @@ const createCandidateAddress = async (
 
 const createCandidateAchievement = async (
   payload: TAchievementInput[],
+  files: Express.Multer.File[],
   user: TUserPayload,
 ) => {
   const userId = user.id;
 
-  console.log(payload);
+  console.log(payload, files, user)
+
   const result = await prisma.$transaction(async (tx) => {
-    // Delete old achievements
+    // 1️⃣ Delete old achievements + documents
+    await tx.document.deleteMany({
+      where: { userId, candidateAchievementId: { not: null } },
+    });
+
     await tx.candidateAchievement.deleteMany({
       where: { userId },
     });
 
-    // Create new ones
-    const created = await tx.candidateAchievement.createMany({
-      data: payload.map((item) => ({
-        userId,
-        type: item.type,
-        title: item.title,
-        description: item.description,
-        organizationName: item.organizationName,
-        url: item.url,
-        location: item.location,
-        year: item.year,
-      })),
-    });
+    const createdAchievements = [];
 
-    return created;
+    // 2️⃣ Create achievements one by one
+    for (let i = 0; i < payload.length; i++) {
+      const item = payload[i];
+
+      const achievement = await tx.candidateAchievement.create({
+        data: {
+          userId,
+          type: item.type,
+          title: item.title,
+          description: item.description,
+          organizationName: item.organizationName,
+          url: item.url,
+          location: item.location,
+          year: item.year,
+        },
+      });
+
+      createdAchievements.push(achievement);
+
+      // 3️⃣ If file exists for this achievement → create document
+      if (files[i]) {
+        const file = files[i];
+
+        await tx.document.create({
+          data: {
+            userId,
+            type: "OTHER",
+            name: item.type,
+            path: file.path,
+            size: file.size,
+            mimeType: file.mimetype,
+            candidateAchievementId: achievement.id, // 🔥 linking happens here
+          },
+        });
+      }
+    }
+
+    return createdAchievements;
   });
 
   return result;
 };
-
 
 
 

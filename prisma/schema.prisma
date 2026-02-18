@@ -195,7 +195,7 @@ model CandidateReference {
   id String @id @default(uuid())
 
   name         String
-  companyName  String
+  companyName  String @map("company_name")
   designation  String
   phone        String
   emailAddress String @map("email_address")

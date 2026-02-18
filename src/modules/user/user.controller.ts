@@ -114,15 +114,16 @@ const getDivisionWithDistrictsAndUpazilas = catchAsync(async (req, res) => {
 
 const createCandidateAchievement = catchAsync(async (req, res) => {
 
-  const files = req.files
+  const files = req.files as Express.Multer.File[];
 
-  console.log(files)
+  const data = JSON.parse(req.body.data)
 
 
-  return
   const result = await UserService.createCandidateAchievement(
-    req.body,
+    data,
+    files,
     req.user as TUserPayload,
+
   );
   res.status(201).json({
     status: true,

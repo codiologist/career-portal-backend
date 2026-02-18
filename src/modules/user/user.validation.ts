@@ -210,12 +210,23 @@ export const achievementSchema = z.object({
 
 export const multipleAchievementSchema = z.array(achievementSchema).min(1);
 
+
+
+
+
+
+
+
+
+
+
+
+
 export const UserProfileValidation = {
   userProfileSPersonalchema,
   workExperienceArraySchema,
   AddressSchema,
   ReferanceArraySchema,
-
   multipleAchievementSchema,
 };
 

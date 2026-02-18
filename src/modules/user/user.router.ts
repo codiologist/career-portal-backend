@@ -54,7 +54,7 @@ router.post(
 router.post(
   '/profile/achievement',
   auth(AuthGard.USER),
-   upload.single('certificate'),
+   uploadArray.array("files"),
   // validationSchema(multipleAchievementSchema),
   UserController.createCandidateAchievement,
 );
