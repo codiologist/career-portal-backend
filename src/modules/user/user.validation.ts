@@ -212,16 +212,6 @@ export const multipleAchievementSchema = z.array(achievementSchema).min(1);
 
 
 
-
-
-
-
-
-
-
-
-
-
 export const UserProfileValidation = {
   userProfileSPersonalchema,
   workExperienceArraySchema,

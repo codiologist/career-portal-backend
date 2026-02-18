@@ -1,6 +1,7 @@
 import { TUserPayload } from '../../types/user';
 import { catchAsync } from '../../utils/catchAsync';
 import { UserService } from './user.service';
+import { UserProfileValidation } from './user.validation';
 // import { UserProfileValidation } from "./user.validation";
 // import { profileSchema } from "./user.validation";
 
@@ -74,8 +75,10 @@ const createCandidateEducation = catchAsync(async (req, res) => {
 });
 
 const createCandidateReference = catchAsync(async (req, res) => {
+
+  const validation = UserProfileValidation.ReferanceArraySchema.parse(req.body)
   const result = await UserService.createCandidateReference(
-    req.body,
+    validation,
     req.user as TUserPayload,
   );
   res.status(201).json({
@@ -118,9 +121,11 @@ const createCandidateAchievement = catchAsync(async (req, res) => {
 
   const data = JSON.parse(req.body.data)
 
+  const validation = UserProfileValidation.multipleAchievementSchema.parse(data)
+
 
   const result = await UserService.createCandidateAchievement(
-    data,
+    validation,
     files,
     req.user as TUserPayload,
 
