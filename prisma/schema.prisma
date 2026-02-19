@@ -326,19 +326,14 @@ model CandidateAchievement {
 
 ///////////////////////////////////  Candidate document ///////////////////////////////////////////
 
-enum DocumentType {
-  AVATAR
-  RESUME
-  SIGNATURE
-  CERTIFICATE
-  OTHER
-}
+
 
 model Document {
   id String @id @default(uuid())
 
-  type                  DocumentType
+  type                  String
   name                  String? // Certificate name or custom file name
+  folderName            String?              @map("folder_name")
   documentNo            String?              @map("document_no")
   issueDate             DateTime?            @map("issue_date")
   issueAuthority        String?              @map("issue_authority")

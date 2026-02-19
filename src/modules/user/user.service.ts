@@ -247,7 +247,7 @@ const createCandidateAchievement = async (
         await tx.document.create({
           data: {
             userId,
-            type: "OTHER",
+            type: "CERTIFICATE",
             name: item.type,
             path: file.path,
             size: file.size,
@@ -465,7 +465,6 @@ const getDivisionWithDistrictsAndUpazilas = async (payload: {
     return { message: 'Invalid query' };
   }
 };
-
 const getEducationDropdown = async (payload: {
   levelId?: string;
   degreeId?: string;
