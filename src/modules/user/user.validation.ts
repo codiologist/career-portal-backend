@@ -219,7 +219,11 @@ export const candidateEducationSchema = z.object({
   degreeId: z
     .string()
     .uuid("Invalid Degree ID format")
-    .optional()
+    .nullable(),
+
+  resultTypeId: z
+    .string()
+    .uuid("Invalid Result Type ID format")
     .nullable(),
 
   boardId: z
@@ -234,11 +238,6 @@ export const candidateEducationSchema = z.object({
     .optional()
     .nullable(),
 
-  resultTypeId: z
-    .string()
-    .uuid("Invalid Result Type ID format")
-    .optional()
-    .nullable(),
 
   majorGroupId: z
     .string()
