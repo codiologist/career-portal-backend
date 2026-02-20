@@ -50,7 +50,7 @@ const uploadSignature = catchAsync(async (req, res) => {
 const uploadDocument = catchAsync(async (req, res) => {
   const file = req.file as TCustomFileMulter; // Cast to CustomFile to access custom properties
   const user = req.user as TUserPayload;
-  const validateData = DocumentValidation.createDocumentSchema.parse(JSON.parse(req.body.data));
+  const validateData = DocumentValidation.DocumentPayloadSchema.parse(JSON.parse(req.body.data));
 
   const result = await UploadService.uploadSDocument(file, user, validateData)
 

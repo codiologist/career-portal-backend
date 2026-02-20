@@ -1,4 +1,4 @@
-import { DocumentValidation, TDocumentInputSchema, TFolderDocumentNameEnumSchema, DocumentPayloadSchema, TDocumentPayloadSchema } from './upload.validation';
+import {  TFolderDocumentNameEnumSchema, TDocumentPayloadSchema } from './upload.validation';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "../../config/prisma"
 import { TUserPayload } from "../../types/user";
@@ -133,22 +133,18 @@ const uploadSDocument = async (file: TCustomFileMulter, user: TUserPayload, payl
   }
 
 
-  console.log(payload)
-
-  return
 
   const result = await prisma.document.upsert({
     where: {
       // You need a unique constraint on (userId + name) in your Prisma schema
       userId_name: {
         userId: user.id,
-        name: payload.name!
+        name: payload.name
       },
     },
     update: {
       type: payload.type,
-      name: payload.type,
-      documentNo: payload.documentNo,
+      folderName: file.fieldname,
       issueDate: payload.issueDate,
       issueAuthority: payload.issueAuthority,
       remarks: payload.remarks,
@@ -159,7 +155,7 @@ const uploadSDocument = async (file: TCustomFileMulter, user: TUserPayload, payl
     create: {
       userId: user.id,
       type: payload.type,
-      name: payload.name,
+      folderName: file.fieldname,
       documentNo: payload.documentNo,
       issueDate: payload.issueDate,
       issueAuthority: payload.issueAuthority,

@@ -14,7 +14,6 @@ const storage = multer.diskStorage({
   destination(req, file, cb) {
     const user = req.user as JwtPayload;
 
-    console.log(user)
     const userId = user?.id;
     if (!userId) return cb(new Error("User ID required"), "");
 

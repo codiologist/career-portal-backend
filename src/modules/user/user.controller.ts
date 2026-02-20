@@ -1,5 +1,4 @@
 import { TUserPayload } from '../../types/user';
-import { AppError } from '../../utils/AppError';
 import { catchAsync } from '../../utils/catchAsync';
 import { UserService } from './user.service';
 import { UserProfileValidation } from './user.validation';
@@ -47,10 +46,11 @@ const createCandidateExperience = catchAsync(async (req, res) => {
 
 
 const createCandidateEducation = catchAsync(async (req, res) => {
-  const result = await UserService.createCandidateEducationService(
-    req.body,
-    req.user as TUserPayload,
-  );
+
+  const files = req.files as Express.Multer.File[];
+  const data = JSON.parse(req.body.data)
+  const validation = UserProfileValidation.candidateEducationArraySchema.parse(data)
+  const result = await UserService.createCandidateEducationService(validation, files, req.user as TUserPayload);
   res.status(201).json({
     status: true,
     message: 'Created user Education successfully',

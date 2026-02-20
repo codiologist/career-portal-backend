@@ -74,6 +74,9 @@ export const DocumentPayloadSchema = z.object({
     .string()
     .max(300, "Remarks cannot exceed 300 characters")
     .optional(),
+  documentNo: z.string()
+    .max(300, "Remarks cannot exceed 300 characters")
+    .optional(),
 });
 
 
@@ -81,7 +84,7 @@ export const DocumentPayloadSchema = z.object({
 
 export const DocumentValidation = {
   createDocumentSchema,
-  DocumentTypeNameEnum, 
+  DocumentTypeNameEnum,
   DocumentPayloadSchema
 }
 

@@ -62,48 +62,6 @@ INSERT INTO intersts (id, interst_name) VALUES
 
 
 
--- Division
-INSERT INTO divisions (id, geo_code, name, bn_name, url, status, created_at, updated_at)
-VALUES 
-(gen_random_uuid(), 'D-01', 'Dhaka Division', 'ঢাকা বিভাগ', 'https://dhaka.gov.bd', true, now(), now());
-
--- District
-INSERT INTO districts (id, division_id, geo_code, name, bn_name, lat, lon, url, status, created_at, updated_at)
-VALUES 
-(gen_random_uuid(), (SELECT id FROM divisions WHERE name='Dhaka Division'), 'DT-01', 'Dhaka District', 'ঢাকা জেলা', 23.8103, 90.4125, 'https://dhaka.gov.bd', true, now(), now());
-
--- Upazila
-INSERT INTO upazilas (id, district_id, geo_code, name, bn_name, url, status, created_at, updated_at)
-VALUES 
-(gen_random_uuid(), (SELECT id FROM districts WHERE name='Dhaka District'), 'UZ-01', 'Dhanmondi', 'ধানমন্ডি', 'https://dhanmondi.gov.bd', true, now(), now());
-
--- Municipality
-INSERT INTO municipalities (id, upazila_id, name, bn_name, status, created_at, updated_at)
-VALUES 
-(gen_random_uuid(), (SELECT id FROM upazilas WHERE name='Dhanmondi'), 'Dhanmondi Municipality', 'ধানমন্ডি পৌরসভা', true, now(), now());
-
--- Union Parishad
-INSERT INTO union_parishads (id, upazila_id, name, bn_name, status, created_at, updated_at)
-VALUES 
-(gen_random_uuid(), (SELECT id FROM upazilas WHERE name='Dhanmondi'), 'Example Union', 'উদাহরণ ইউনিয়ন', true, now(), now());
-
-
--- Police Station
-INSERT INTO police_stations (id, district_id, geo_code, bn_name, url, status, created_at, updated_at)
-VALUES 
-(gen_random_uuid(), (SELECT id FROM districts WHERE name='Dhaka District'), 'PS-01', 'Dhanmondi Thana', 'https://dhanmondi-police.gov.bd', true, now(), now());
-
--- Post Office
-INSERT INTO post_offices (id, district_id, upazila_id, post_office, post_code, created_at, updated_at)
-VALUES
-(gen_random_uuid(), 
- (SELECT id FROM districts WHERE name='Dhaka District'), 
- (SELECT id FROM upazilas WHERE name='Dhanmondi'), 
- 'Dhanmondi Post Office', '1209', now(), now());
-
-
-
-
 
 -- Test all data is work fine
 
@@ -137,6 +95,26 @@ DELETE FROM upazilas;
 DELETE FROM districts;
 DELETE FROM divisions;
 
+
+
+
+-- First delete from dependent tables (if exists)
+DELETE FROM candidate_educations;
+
+-- Then delete child tables
+DELETE FROM degrees;
+
+-- Then delete parent tables
+DELETE FROM level_of_educations;
+DELETE FROM education_boards;
+DELETE FROM subjects;
+DELETE FROM major_groups;
+DELETE FROM result_types;
+
+
+
+
+
 DELETE FROM religions;
 DELETE FROM blood_groups;
 DELETE FROM skills;
@@ -144,6 +122,21 @@ DELETE FROM intersts;
 
 
 
+
+
+[
+  {
+    "levelId": "55163d51-6646-4cbf-a9fa-67ac04b10419",
+    "degreeId": "7dca750b-0290-4816-ad60-d9e3f896d801",
+    "boardId": "c886e410-746d-47ad-bba4-6aa7d24d6672",
+    "subjectId": "980b98e7-0bf2-4603-8fad-48c24efb99ef",
+    "resultTypeId": "4bfbd6ff-1bb4-41df-81f6-3d22f4d56b5d",
+    "majorGroupId": "1b8068d5-9dd5-49e4-9417-0efe9c63386a",
+    "institution": "Dhaka College",
+    "passingYear": 2020,
+    "result": "4.50"
+  }
+]
 
 
 

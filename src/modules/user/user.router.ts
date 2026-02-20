@@ -44,6 +44,7 @@ router.post(
 router.post(
   '/profile/education',
   auth(AuthGard.USER),
+  upload.array("certificate"),
   UserController.createCandidateEducation,
 );
 router.post(
@@ -54,7 +55,7 @@ router.post(
 router.post(
   '/profile/achievement',
   auth(AuthGard.USER),
-   upload.array("certificateAchivement"),
+   upload.array("achievement"),
   // validationSchema(multipleAchievementSchema),
   UserController.createCandidateAchievement,
 );
