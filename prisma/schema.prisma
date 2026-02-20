@@ -89,7 +89,7 @@ model CandidatePersonal {
 
 model Religion {
   id                String              @id @default(uuid())
-  name              String @unique
+  name              String              @unique
   candidatePersonal CandidatePersonal[]
 
   @@map("religions")
@@ -97,7 +97,7 @@ model Religion {
 
 model SocialLink {
   id                  String            @id @default(uuid())
-  label               String  @unique
+  label               String            @unique
   url                 String
   candidatePersonalId String            @map("candidate_personal_id")
   candidatePersonal   CandidatePersonal @relation(fields: [candidatePersonalId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -107,7 +107,7 @@ model SocialLink {
 
 model Interst {
   id                 String              @id @default(uuid())
-  interstName        String       @unique       @map("interst_name")
+  interstName        String              @unique @map("interst_name")
   candidatesPersonal CandidatePersonal[] @relation("CandidateInterests")
 
   @@map("intersts")
@@ -115,7 +115,7 @@ model Interst {
 
 model Skill {
   id                 String              @id @default(uuid())
-  skillName          String           @unique   @map("skill_name")
+  skillName          String              @unique @map("skill_name")
   candidatesPersonal CandidatePersonal[] @relation("CandidateSkills")
 
   @@map("skills")
@@ -123,7 +123,7 @@ model Skill {
 
 model BloodGroup {
   id                 String              @id @default(uuid())
-  name               String @unique
+  name               String              @unique
   candidatePersonals CandidatePersonal[]
 
   @@map("blood_groups")
@@ -292,9 +292,8 @@ model CandidateLanguage {
 model CandidateAchievement {
   id String @id @default(uuid())
 
-  name             String
   title            String
-  organizationName String          @map("organization_name")
+  organizationName String  @map("organization_name")
   url              String?
   location         String
   year             Int
@@ -303,8 +302,8 @@ model CandidateAchievement {
   userId    String
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   documents Document[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
 
   @@map("candidate_achievements")
 }
@@ -328,6 +327,7 @@ model Document {
   mimeType              String               @map("mime_type")
   isDeleted             Boolean              @default(false) @map("is_deleted")
   createdAt             DateTime             @default(now()) @map("created_at")
+  updatedAt             DateTime             @updatedAt @map("updated_at")
   userId                String               @map("user_id")
   user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   // Optional relation to a candidate experience
@@ -340,7 +340,7 @@ model Document {
   candidateAchievementId String?               @map("candidate_achievement_id")
   candidateAchievement   CandidateAchievement? @relation(fields: [candidateAchievementId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, name], name: "userId_name") // prevents duplicate certificate names per user
+
   @@index([userId])
   @@map("documents")
 }

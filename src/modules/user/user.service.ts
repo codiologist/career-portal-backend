@@ -113,52 +113,61 @@ const createCandidateEducationService = async (
 ) => {
   const userId = user.id;
 
-  console.log(files)
-
   if (!payload || payload.length === 0) {
     throw new AppError(400, "Education payload is required");
   }
 
-  // 1. Create file map by tempId (matches fieldname like 'file_tempId123')
+  // 🔥 Create file map using tempId
   const fileMap = new Map<string, Express.Multer.File>();
+
   if (files && files.length > 0) {
     files.forEach((file) => {
-      const parts = file.fieldname.split("_");
-      if (parts.length > 1) {
-        fileMap.set(parts[1], file);
-      }
+      const tempId = file.fieldname.split("_")[1];
+      fileMap.set(tempId, file);
     });
   }
 
+
   const result = await prisma.$transaction(async (tx) => {
-    // 2. Sync Existing Data: Identify what to keep vs. delete
-    const existingEducation = await tx.candidateEducation.findMany({
+
+    // 🔥 1. Get existing educations
+    const existingEducations = await tx.candidateEducation.findMany({
       where: { userId },
       select: { id: true },
     });
 
-    const existingIds = existingEducation.map((item) => item.id);
-    const incomingIds = payload.filter((item) => item.id).map((item) => item.id);
+    const existingIds = existingEducations.map((item) => item.id);
 
-    const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
-console.log(idsToDelete)
+    const incomingIds = payload
+      .filter((item) => item.id)
+      .map((item) => item.id);
+
+    // 🔥 2. Delete removed educations
+    const idsToDelete = existingIds.filter(
+      (id) => !incomingIds.includes(id)
+    );
+
     if (idsToDelete.length > 0) {
-      // Delete associated documents first if not using Cascade at DB level
+      // delete related documents first
       await tx.document.deleteMany({
-        where: { candidateEducationId: { in: idsToDelete } },
+        where: {
+          candidateEducationId: { in: idsToDelete },
+        },
       });
 
+      // then delete education
       await tx.candidateEducation.deleteMany({
-        where: { id: { in: idsToDelete } },
+        where: {
+          id: { in: idsToDelete },
+        },
       });
     }
 
-
-
     const finalEducations = [];
 
-    // 3. Create or Update Loop
+    // 🔥 3. Create or Update
     for (const item of payload) {
+      let education;
       const educationData = {
         userId,
         levelId: item.levelId,
@@ -168,48 +177,50 @@ console.log(idsToDelete)
         resultTypeId: item.resultTypeId,
         majorGroupId: item.majorGroupId,
         institution: item.institution,
-        passingYear: item.passingYear ? parseInt(String(item.passingYear)) : null,
+        passingYear: item.passingYear
+          ? parseInt(String(item.passingYear))
+          : null,
         result: item.result,
       };
 
-      let education;
-
       if (item.id) {
-        // Update existing record
+        // ✅ Update
         education = await tx.candidateEducation.update({
           where: { id: item.id },
           data: educationData,
         });
       } else {
-        // Create new record
+        // ✅ Create
         education = await tx.candidateEducation.create({
           data: educationData,
         });
       }
 
       finalEducations.push(education);
- console.log("files ha yes", item)
-      // 4. Handle File Upload (Certificate/Transcript)
-      const file = fileMap.get(item.tempId!);
-  console.log("files ha yes", file)
 
+      console.log(fileMap)
+
+      // 🔥 4. Handle File (Replace old certificate)
+      const file = fileMap.get(item.tempId!);
 
 
       if (file) {
-        // Delete old document for this specific education record if replacing
+        // delete old certificate
         await tx.document.deleteMany({
-          where: { candidateEducationId: education.id },
+          where: {
+            candidateEducationId: education.id,
+          },
         });
 
         await tx.document.create({
           data: {
             userId,
             type: "CERTIFICATE",
-            name: `${item.institution || 'Education'}_Document`,
+            folderName: file.fieldname,
             path: file.path,
             size: file.size,
             mimeType: file.mimetype,
-            candidateEducationId: education.id, // Ensure your Document model has this field
+            candidateEducationId: education.id,
           },
         });
       }
@@ -218,9 +229,8 @@ console.log(idsToDelete)
     return finalEducations;
   });
 
+  return result;
 };
-
-
 
 const createCandidateReference = async (
   payload: TReferance[],
@@ -311,6 +321,7 @@ const createCandidateAchievement = async (
     });
   }
 
+
   const result = await prisma.$transaction(async (tx) => {
     // 🔥 1. Get existing achievements
     const existingAchievements = await tx.candidateAchievement.findMany({
@@ -347,7 +358,6 @@ const createCandidateAchievement = async (
         achievement = await tx.candidateAchievement.update({
           where: { id: item.id },
           data: {
-            name: item.name,
             title: item.title,
             description: item.description,
             organizationName: item.organizationName,
@@ -361,7 +371,6 @@ const createCandidateAchievement = async (
         achievement = await tx.candidateAchievement.create({
           data: {
             userId,
-            name: item.name,
             title: item.title,
             description: item.description,
             organizationName: item.organizationName,
@@ -374,8 +383,11 @@ const createCandidateAchievement = async (
 
       finalAchievements.push(achievement);
 
+      console.log("file map", fileMap)
+
       // 🔥 4. Handle File
       const file = fileMap.get(item.tempId!);
+
 
       if (file) {
         // Delete old document (replace file)
@@ -389,8 +401,8 @@ const createCandidateAchievement = async (
           data: {
             userId,
             type: "ACHIEVEMENT",
+            name: item.title,
             folderName: file.fieldname,
-            name: item.name,
             path: file.path,
             size: file.size,
             mimeType: file.mimetype,
@@ -405,7 +417,6 @@ const createCandidateAchievement = async (
 
   return result;
 };
-
 
 const me = async (user: TUserPayload) => {
   const result = await prisma.user.findUnique({
@@ -474,8 +485,9 @@ const me = async (user: TUserPayload) => {
       documents: {
         where: {
           type: {
-            in: ["DOCUMENT", "AVATAR", "RESUME", "SIGNATURE"]
-          }
+            notIn: ["CERTIFICATE", "ACHIEVEMENT"]
+          },
+          isDeleted: false
         },
         select: {
           id: true,
@@ -485,6 +497,7 @@ const me = async (user: TUserPayload) => {
           path: true,
           remarks: true,
           documentNo: true,
+          isDeleted: true,
           issueAuthority: true
         }
       },
@@ -560,7 +573,14 @@ const me = async (user: TUserPayload) => {
             },
             select: {
               id: true,
-
+              type: true,
+              name: true,
+              folderName: true,
+              path: true,
+              remarks: true,
+              documentNo: true,
+              isDeleted: true,
+              issueAuthority: true
             }
           }
         }

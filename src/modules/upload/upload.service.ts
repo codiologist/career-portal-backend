@@ -1,4 +1,4 @@
-import {  TFolderDocumentNameEnumSchema, TDocumentPayloadSchema } from './upload.validation';
+import { TFolderDocumentNameEnumSchema, TDocumentPayloadSchema } from './upload.validation';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { prisma } from "../../config/prisma"
 import { TUserPayload } from "../../types/user";
@@ -133,40 +133,47 @@ const uploadSDocument = async (file: TCustomFileMulter, user: TUserPayload, payl
   }
 
 
-
-  const result = await prisma.document.upsert({
-    where: {
-      // You need a unique constraint on (userId + name) in your Prisma schema
-      userId_name: {
+  const result = await prisma.$transaction(async (tx) => {
+    const existing = await tx.document.findFirst({
+      where: {
         userId: user.id,
-        name: payload.type
+        type: payload.type,
       },
-    },
-    update: {
-      type: payload.type,
-      folderName: file.fieldname,
-      issueDate: payload.issueDate,
-      issueAuthority: payload.issueAuthority,
-      remarks: payload.remarks,
-      path: file.path,
-      size: file.size,
-      mimeType: file.mimetype,
-    },
-    create: {
-      userId: user.id,
-      type: payload.type,
-      folderName: file.fieldname,
-      documentNo: payload.documentNo,
-      issueDate: payload.issueDate,
-      issueAuthority: payload.issueAuthority,
-      remarks: payload.remarks,
-      path: file.path,
-      size: file.size,
-      mimeType: file.mimetype,
-    },
+    });
+
+    if (existing) {
+      await tx.document.update({
+        where: { id: existing.id },
+        data: {
+          type: payload.type,
+          name: payload.name,
+          folderName: file.fieldname,
+          issueDate: payload.issueDate,
+          issueAuthority: payload.issueAuthority,
+          remarks: payload.remarks,
+          path: file.path,
+          size: file.size,
+          mimeType: file.mimetype,
+        },
+      });
+    } else {
+      await tx.document.create({
+        data: {
+          userId: user.id,
+          type: payload.type,
+          name: payload.name,
+          folderName: file.fieldname,
+          documentNo: payload.documentNo,
+          issueDate: payload.issueDate,
+          issueAuthority: payload.issueAuthority,
+          remarks: payload.remarks,
+          path: file.path,
+          size: file.size,
+          mimeType: file.mimetype,
+        },
+      });
+    }
   });
-
-
 
   console.log(result);
 

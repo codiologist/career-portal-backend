@@ -43,35 +43,34 @@ export const userProfileSPersonalchema = z.object({
 
 /////////// Exprience validation schema //////////////////////
 
-export const workExperienceSchema = z
-  .object({
-    companyName: z
-      .string()
-      .min(1, 'Company name is required')
-      .min(2, 'Company name must be at least 2 characters'),
+export const workExperienceSchema = z.object({
+  companyName: z
+    .string()
+    .min(1, 'Company name is required')
+    .min(2, 'Company name must be at least 2 characters'),
 
-    companyBusinessType: z.string().min(1, 'Company business type is required'),
+  companyBusinessType: z.string().min(1, 'Company business type is required'),
 
-    location: z.string().min(1, 'Location is required'),
+  location: z.string().min(1, 'Location is required'),
 
-    designation: z.string().min(1, 'Designation is required'),
+  designation: z.string().min(1, 'Designation is required'),
 
-    department: z.string().min(1, 'Department is required'),
+  department: z.string().min(1, 'Department is required'),
 
-    isContinue: z.boolean(),
+  isContinue: z.boolean(),
 
-    responsibilities: z.string().optional(),
+  responsibilities: z.string().optional(),
 
-    startDate: z
-      .string()
-      .datetime({ message: 'Start date must be a valid ISO datetime' }),
+  startDate: z
+    .string()
+    .datetime({ message: 'Start date must be a valid ISO datetime' }),
 
-    endDate: z
-      .string()
-      .datetime({ message: 'End date must be a valid ISO datetime' })
-      .nullable()
-      .optional(),
-  })
+  endDate: z
+    .string()
+    .datetime({ message: 'End date must be a valid ISO datetime' })
+    .nullable()
+    .optional(),
+})
   .refine(
     (data) => {
       // If not continuing, endDate must exist
@@ -173,14 +172,10 @@ export const multipleAddressSchema = z.array(AddressSchema).min(1);
 
 
 export const achievementSchema = z.object({
-   id:  z.string()
+  id: z.string()
     .min(3, 'Title must be at least 3 characters')
     .max(150, 'Title is too long').optional(),
-  name: z
-    .string()
-    .min(3, 'Title must be at least 3 characters')
-    .max(150, 'Title is too long'),
-tempId:   z.string()
+  tempId: z.string()
     .min(3, 'Title must be at least 3 characters')
     .max(150, 'Title is too long').optional(),
   title: z
@@ -211,8 +206,7 @@ export const multipleAchievementSchema = z.array(achievementSchema).min(1);
 export const candidateEducationSchema = z.object({
   id: z.string()
     .uuid("Invalid Level ID format").optional(),
-    tempId:z.string()
-    .uuid("Invalid Level ID format").optional(),
+
   levelId: z
     .string()
     .uuid("Invalid Level ID format"),
@@ -220,7 +214,9 @@ export const candidateEducationSchema = z.object({
     .string()
     .uuid("Invalid Degree ID format")
     .nullable(),
-
+  tempId: z.string()
+    .min(3, 'Title must be at least 3 characters')
+    .max(150, 'Title is too long').optional(),
   resultTypeId: z
     .string()
     .uuid("Invalid Result Type ID format")
@@ -294,5 +290,5 @@ export type TMultipleAddressInput = z.infer<typeof multipleAddressSchema>;
 // Address Type Enum
 export type TAddressType = z.infer<typeof addressTypeEnum>;
 export type TAchievementInput = z.infer<typeof achievementSchema>;
-export type TAchievementEnum = z.infer<typeof  addressTypeEnum>;
+export type TAchievementEnum = z.infer<typeof addressTypeEnum>;
 export type TMultipleEducationInput = z.infer<typeof candidateEducationSchema>;

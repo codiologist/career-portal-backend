@@ -2,12 +2,6 @@
 CREATE TYPE "Role" AS ENUM ('HR', 'USER', 'ADMIN', 'MODERATOR');
 
 -- CreateEnum
-CREATE TYPE "AchievementType" AS ENUM ('PROFESSIONAL_CERTIFICATION', 'TRAINING', 'WORKSHOP', 'SEMINAR', 'AWARD', 'HONOR', 'COMPETITION', 'PUBLICATION', 'PROJECT', 'OTHER');
-
--- CreateEnum
-CREATE TYPE "DocumentType" AS ENUM ('AVATAR', 'RESUME', 'SIGNATURE', 'CERTIFICATE', 'OTHER');
-
--- CreateEnum
 CREATE TYPE "AddressTypeEnum" AS ENUM ('PRESENT', 'PERMANENT');
 
 -- CreateTable
@@ -99,12 +93,16 @@ CREATE TABLE "blood_groups" (
 -- CreateTable
 CREATE TABLE "candidate_educations" (
     "id" TEXT NOT NULL,
-    "study_year" TEXT,
-    "passing_year" TEXT,
-    "result_type" TEXT,
-    "result" TEXT,
-    "total_cgpa" TEXT,
     "user_id" TEXT NOT NULL,
+    "level_id" TEXT NOT NULL,
+    "degree_id" TEXT,
+    "board_id" TEXT,
+    "subject_id" TEXT,
+    "result_type_id" TEXT,
+    "major_group_id" TEXT,
+    "institution" TEXT,
+    "passingYear" INTEGER,
+    "result" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -112,13 +110,53 @@ CREATE TABLE "candidate_educations" (
 );
 
 -- CreateTable
+CREATE TABLE "level_of_educations" (
+    "id" TEXT NOT NULL,
+    "level_name" TEXT NOT NULL,
+
+    CONSTRAINT "level_of_educations_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "degrees" (
+    "id" TEXT NOT NULL,
+    "degree_name" TEXT NOT NULL,
+    "level_id" TEXT NOT NULL,
+
+    CONSTRAINT "degrees_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "education_boards" (
+    "id" TEXT NOT NULL,
+    "board_name" TEXT NOT NULL,
+
+    CONSTRAINT "education_boards_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "subjects" (
     "id" TEXT NOT NULL,
     "subject_name" TEXT NOT NULL,
     "status" BOOLEAN NOT NULL DEFAULT true,
-    "user_id" TEXT NOT NULL,
 
     CONSTRAINT "subjects_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "major_groups" (
+    "id" TEXT NOT NULL,
+    "group_name" TEXT NOT NULL,
+
+    CONSTRAINT "major_groups_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "result_types" (
+    "id" TEXT NOT NULL,
+    "result_type" TEXT NOT NULL,
+
+    CONSTRAINT "result_types_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -144,7 +182,7 @@ CREATE TABLE "candidate_experiences" (
 CREATE TABLE "candidate_references" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "companyName" TEXT NOT NULL,
+    "company_name" TEXT,
     "designation" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
     "email_address" TEXT NOT NULL,
@@ -171,7 +209,7 @@ CREATE TABLE "candidate_languages" (
 -- CreateTable
 CREATE TABLE "candidate_achievements" (
     "id" TEXT NOT NULL,
-    "type" "AchievementType" NOT NULL,
+    "name" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "organization_name" TEXT NOT NULL,
     "url" TEXT,
@@ -188,8 +226,9 @@ CREATE TABLE "candidate_achievements" (
 -- CreateTable
 CREATE TABLE "documents" (
     "id" TEXT NOT NULL,
-    "type" "DocumentType" NOT NULL,
+    "type" TEXT NOT NULL,
     "name" TEXT,
+    "folder_name" TEXT,
     "document_no" TEXT,
     "issue_date" TIMESTAMP(3),
     "issue_authority" TEXT,
@@ -197,10 +236,12 @@ CREATE TABLE "documents" (
     "path" TEXT NOT NULL,
     "size" INTEGER NOT NULL,
     "mime_type" TEXT NOT NULL,
+    "is_deleted" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "user_id" TEXT NOT NULL,
     "candidate_experience_id" TEXT,
     "candidate_education_id" TEXT,
+    "candidate_achievement_id" TEXT,
 
     CONSTRAINT "documents_pkey" PRIMARY KEY ("id")
 );
@@ -382,7 +423,34 @@ CREATE UNIQUE INDEX "candidate_personals_user_id_key" ON "candidate_personals"("
 CREATE INDEX "candidate_personals_user_id_idx" ON "candidate_personals"("user_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "subjects_user_id_key" ON "subjects"("user_id");
+CREATE UNIQUE INDEX "religions_name_key" ON "religions"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "social_links_label_key" ON "social_links"("label");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "intersts_interst_name_key" ON "intersts"("interst_name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "skills_skill_name_key" ON "skills"("skill_name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "blood_groups_name_key" ON "blood_groups"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "level_of_educations_level_name_key" ON "level_of_educations"("level_name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "education_boards_board_name_key" ON "education_boards"("board_name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "subjects_subject_name_key" ON "subjects"("subject_name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "major_groups_group_name_key" ON "major_groups"("group_name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "result_types_result_type_key" ON "result_types"("result_type");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "candidate_experiences_user_id_company_name_designation_depa_key" ON "candidate_experiences"("user_id", "company_name", "designation", "department", "company_business_type", "responsibilities");
@@ -391,7 +459,7 @@ CREATE UNIQUE INDEX "candidate_experiences_user_id_company_name_designation_depa
 CREATE INDEX "documents_user_id_idx" ON "documents"("user_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "documents_user_id_name_key" ON "documents"("user_id", "name");
+CREATE UNIQUE INDEX "documents_user_id_key" ON "documents"("user_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "address_user_id_address_type_id_key" ON "address"("user_id", "address_type_id");
@@ -445,7 +513,25 @@ ALTER TABLE "social_links" ADD CONSTRAINT "social_links_candidate_personal_id_fk
 ALTER TABLE "candidate_educations" ADD CONSTRAINT "candidate_educations_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "subjects" ADD CONSTRAINT "subjects_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "candidate_educations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "candidate_educations" ADD CONSTRAINT "candidate_educations_level_id_fkey" FOREIGN KEY ("level_id") REFERENCES "level_of_educations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "candidate_educations" ADD CONSTRAINT "candidate_educations_degree_id_fkey" FOREIGN KEY ("degree_id") REFERENCES "degrees"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "candidate_educations" ADD CONSTRAINT "candidate_educations_board_id_fkey" FOREIGN KEY ("board_id") REFERENCES "education_boards"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "candidate_educations" ADD CONSTRAINT "candidate_educations_subject_id_fkey" FOREIGN KEY ("subject_id") REFERENCES "subjects"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "candidate_educations" ADD CONSTRAINT "candidate_educations_result_type_id_fkey" FOREIGN KEY ("result_type_id") REFERENCES "result_types"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "candidate_educations" ADD CONSTRAINT "candidate_educations_major_group_id_fkey" FOREIGN KEY ("major_group_id") REFERENCES "major_groups"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "degrees" ADD CONSTRAINT "degrees_level_id_fkey" FOREIGN KEY ("level_id") REFERENCES "level_of_educations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "candidate_experiences" ADD CONSTRAINT "candidate_experiences_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -467,6 +553,9 @@ ALTER TABLE "documents" ADD CONSTRAINT "documents_candidate_experience_id_fkey" 
 
 -- AddForeignKey
 ALTER TABLE "documents" ADD CONSTRAINT "documents_candidate_education_id_fkey" FOREIGN KEY ("candidate_education_id") REFERENCES "candidate_educations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "documents" ADD CONSTRAINT "documents_candidate_achievement_id_fkey" FOREIGN KEY ("candidate_achievement_id") REFERENCES "candidate_achievements"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "address" ADD CONSTRAINT "address_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
