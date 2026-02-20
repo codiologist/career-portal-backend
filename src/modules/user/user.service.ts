@@ -6,6 +6,7 @@ import {
   TAchievementInput,
   TAddressInput,
   TCanditateProfile,
+  TMultipleEducationInput,
   TReferance,
   TWorkExperiece,
 } from './user.validation';
@@ -106,16 +107,116 @@ const createCandidateExperienceService = async (
 };
 
 const createCandidateEducationService = async (
-  payload: any,
+  payload: TMultipleEducationInput[],
+  files: Express.Multer.File[],
   user: TUserPayload,
 ) => {
-  const result = await prisma.candidateEducation.create({
-    data: {
-      userId: user.id,
-    },
-  });
+  const userId = user.id;
 
-  return result;
+  console.log(files);
+
+  if (!payload || payload.length === 0) {
+    throw new AppError(400, 'Education payload is required');
+  }
+
+  // 1. Create file map by tempId (matches fieldname like 'file_tempId123')
+  const fileMap = new Map<string, Express.Multer.File>();
+  if (files && files.length > 0) {
+    files.forEach((file) => {
+      const parts = file.fieldname.split('_');
+      if (parts.length > 1) {
+        fileMap.set(parts[1], file);
+      }
+    });
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    // 2. Sync Existing Data: Identify what to keep vs. delete
+    const existingEducation = await tx.candidateEducation.findMany({
+      where: { userId },
+      select: { id: true },
+    });
+
+    const existingIds = existingEducation.map((item) => item.id);
+    const incomingIds = payload
+      .filter((item) => item.id)
+      .map((item) => item.id);
+
+    const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
+    console.log(idsToDelete);
+    if (idsToDelete.length > 0) {
+      // Delete associated documents first if not using Cascade at DB level
+      await tx.document.deleteMany({
+        where: { candidateEducationId: { in: idsToDelete } },
+      });
+
+      await tx.candidateEducation.deleteMany({
+        where: { id: { in: idsToDelete } },
+      });
+    }
+
+    const finalEducations = [];
+
+    // 3. Create or Update Loop
+    for (const item of payload) {
+      const educationData = {
+        userId,
+        levelId: item.levelId,
+        degreeId: item.degreeId,
+        boardId: item.boardId,
+        subjectId: item.subjectId,
+        resultTypeId: item.resultTypeId,
+        majorGroupId: item.majorGroupId,
+        institution: item.institution,
+        passingYear: item.passingYear
+          ? parseInt(String(item.passingYear))
+          : null,
+        result: item.result,
+      };
+
+      let education;
+
+      if (item.id) {
+        // Update existing record
+        education = await tx.candidateEducation.update({
+          where: { id: item.id },
+          data: educationData,
+        });
+      } else {
+        // Create new record
+        education = await tx.candidateEducation.create({
+          data: educationData,
+        });
+      }
+
+      finalEducations.push(education);
+      console.log('files ha yes', item);
+      // 4. Handle File Upload (Certificate/Transcript)
+      const file = fileMap.get(item.tempId!);
+      console.log('files ha yes', file);
+
+      if (file) {
+        // Delete old document for this specific education record if replacing
+        await tx.document.deleteMany({
+          where: { candidateEducationId: education.id },
+        });
+
+        await tx.document.create({
+          data: {
+            userId,
+            type: 'CERTIFICATE',
+            name: `${item.institution || 'Education'}_Document`,
+            path: file.path,
+            size: file.size,
+            mimeType: file.mimetype,
+            candidateEducationId: education.id, // Ensure your Document model has this field
+          },
+        });
+      }
+    }
+
+    return finalEducations;
+  });
 };
 
 const createCandidateReference = async (
@@ -191,67 +292,114 @@ const createCandidateAchievement = async (
   files: Express.Multer.File[],
   user: TUserPayload,
 ) => {
-  if (files.length < 0) {
-    throw new AppError(500, 'files not found please select files');
-  }
-
   const userId = user.id;
 
-  console.log(payload, files, user);
+  if (!payload || payload.length === 0) {
+    throw new AppError(400, 'Achievement payload is required');
+  }
+
+  // 🔥 Create file map by tempId
+  const fileMap = new Map<string, Express.Multer.File>();
+
+  if (files && files.length > 0) {
+    files.forEach((file) => {
+      const tempId = file.fieldname.split('_')[1];
+      fileMap.set(tempId, file);
+    });
+  }
 
   const result = await prisma.$transaction(async (tx) => {
-    // 1️⃣ Delete old achievements + documents
-    await tx.document.deleteMany({
-      where: { userId, candidateAchievementId: { not: null } },
-    });
-
-    await tx.candidateAchievement.deleteMany({
+    // 🔥 1. Get existing achievements
+    const existingAchievements = await tx.candidateAchievement.findMany({
       where: { userId },
+      select: { id: true },
     });
 
-    const createdAchievements = [];
+    const existingIds = existingAchievements.map((item) => item.id);
 
-    // 2️⃣ Create achievements one by one
-    for (let i = 0; i < payload.length; i++) {
-      const item = payload[i];
+    const incomingIds = payload
+      .filter((item) => item.id)
+      .map((item) => item.id);
+    // 🔥 2. Delete removed achievements
+    const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
 
-      const achievement = await tx.candidateAchievement.create({
-        data: {
-          userId,
-          type: item.type,
-          title: item.title,
-          description: item.description,
-          organizationName: item.organizationName,
-          url: item.url,
-          location: item.location,
-          year: item.year,
-        },
-        include: {
-          documents: true,
+    if (idsToDelete.length > 0) {
+      await tx.document.deleteMany({
+        where: {
+          candidateAchievementId: { in: idsToDelete },
         },
       });
 
-      createdAchievements.push(achievement);
+      await tx.candidateAchievement.deleteMany({
+        where: { id: { in: idsToDelete } },
+      });
+    }
 
-      // 3️⃣ If file exists for this achievement → create document
-      if (files[i]) {
-        const file = files[i];
+    const finalAchievements = [];
+
+    // 🔥 3. Create or Update
+    for (const item of payload) {
+      let achievement;
+
+      if (item.id) {
+        // ✅ Update
+        achievement = await tx.candidateAchievement.update({
+          where: { id: item.id },
+          data: {
+            name: item.name,
+            title: item.title,
+            description: item.description,
+            organizationName: item.organizationName,
+            url: item.url,
+            location: item.location,
+            year: item.year,
+          },
+        });
+      } else {
+        // ✅ Create
+        achievement = await tx.candidateAchievement.create({
+          data: {
+            userId,
+            name: item.name,
+            title: item.title,
+            description: item.description,
+            organizationName: item.organizationName,
+            url: item.url,
+            location: item.location,
+            year: item.year,
+          },
+        });
+      }
+
+      finalAchievements.push(achievement);
+
+      // 🔥 4. Handle File
+      const file = fileMap.get(item.tempId!);
+
+      if (file) {
+        // Delete old document (replace file)
+        await tx.document.deleteMany({
+          where: {
+            candidateAchievementId: achievement.id,
+          },
+        });
 
         await tx.document.create({
           data: {
             userId,
-            type: 'OTHER',
-            name: item.type,
+            type: 'ACHIEVEMENT',
+            folderName: file.fieldname,
+            name: item.name,
             path: file.path,
             size: file.size,
             mimeType: file.mimetype,
-            candidateAchievementId: achievement.id, // 🔥 linking happens here
+            candidateAchievementId: achievement.id,
           },
         });
       }
     }
 
-    return createdAchievements;
+    return finalAchievements;
   });
 
   return result;
@@ -323,16 +471,93 @@ const me = async (user: TUserPayload) => {
       },
       documents: {
         where: {
-          isDeleted: false,
+          type: {
+            in: ['DOCUMENT', 'AVATAR', 'RESUME', 'SIGNATURE'],
+          },
+        },
+        select: {
+          id: true,
+          type: true,
+          name: true,
+          folderName: true,
+          path: true,
+          remarks: true,
+          documentNo: true,
+          issueAuthority: true,
         },
       },
       candidateExperiences: true,
-      candidateReferences: true,
+      candidateReferences: {
+        select: {
+          id: true,
+          name: true,
+          companyName: true,
+          designation: true,
+          phone: true,
+          emailAddress: true,
+          relationship: true,
+        },
+      },
       candidateAchievements: {
         include: {
           documents: {
+            select: {
+              id: true,
+              type: true,
+              name: true,
+              folderName: true,
+              path: true,
+            },
             where: {
               isDeleted: false,
+            },
+          },
+        },
+      },
+      candidateEducations: {
+        select: {
+          id: true,
+          passingYear: true,
+          institution: true,
+          result: true,
+          board: {
+            select: {
+              boardName: true,
+            },
+          },
+
+          degree: {
+            select: {
+              degreeName: true,
+            },
+          },
+          level: {
+            select: {
+              levelName: true,
+            },
+          },
+          majorGroup: {
+            select: {
+              groupName: true,
+            },
+          },
+          resultType: {
+            select: {
+              resultType: true,
+            },
+          },
+          subject: {
+            select: {
+              subjectName: true,
+            },
+          },
+
+          documents: {
+            where: {
+              isDeleted: false,
+            },
+            select: {
+              id: true,
             },
           },
         },
@@ -462,82 +687,118 @@ const getDivisionWithDistrictsAndUpazilas = async (payload: {
     return { message: 'Invalid query' };
   }
 };
-
 const getEducationDropdown = async (payload: {
   levelId?: string;
   degreeId?: string;
-  candidateId?: string;
+  candidateId?: string; // this is actually userId
 }) => {
   try {
     const { levelId, degreeId, candidateId } = payload;
 
-    console.log(payload);
-
     // 1️⃣ No params → return all education levels
     if (!levelId && !degreeId && !candidateId) {
       const levels = await prisma.levelOfEducation.findMany({
-        select: { id: true, levelName: true },
+        select: {
+          id: true,
+          levelName: true,
+        },
+        orderBy: { levelName: 'asc' },
       });
-      return { level: 'level', data: levels };
+
+      return { type: 'level', data: levels };
     }
 
     // 2️⃣ Level selected → return degrees under that level
     if (levelId && !degreeId && !candidateId) {
       const degrees = await prisma.degree.findMany({
         where: { levelId },
-        select: { id: true, degreeName: true, levelId: true },
-      });
-      return { level: 'degree', data: degrees };
-    }
-
-    // 3️⃣ Degree selected → return candidate educations for that degree
-    if (degreeId && !candidateId) {
-      const candidateEducations = await prisma.candidateEducation.findMany({
-        where: { degreeId },
         select: {
           id: true,
-          candidateId: true,
-          board: { select: { id: true, boardName: true } },
-          majorGroup: { select: { id: true, groupName: true } },
-          resultType: { select: { id: true, resultType: true } },
-          subjects: { select: { id: true, subjectName: true } },
+          degreeName: true,
+          levelId: true,
         },
+        orderBy: { degreeName: 'asc' },
       });
+
+      return { type: 'degree', data: degrees };
+    }
+
+    // 3️⃣ Degree selected → return related dropdown data (board, group, resultType)
+    if (degreeId && !candidateId) {
+      const boards = await prisma.educationBoard.findMany({
+        select: { id: true, boardName: true },
+        orderBy: { boardName: 'asc' },
+      });
+
+      const majorGroups = await prisma.majorGroup.findMany({
+        select: { id: true, groupName: true },
+        orderBy: { groupName: 'asc' },
+      });
+
+      const resultTypes = await prisma.resultType.findMany({
+        select: { id: true, resultType: true },
+        orderBy: { resultType: 'asc' },
+      });
+
+      const subjects = await prisma.subject.findMany({
+        where: { status: true },
+        select: { id: true, subjectName: true },
+        orderBy: { subjectName: 'asc' },
+      });
+
       return {
-        level: 'candidate-education',
-        data: candidateEducations,
+        type: 'education-meta',
+        data: {
+          boards,
+          majorGroups,
+          resultTypes,
+          subjects,
+        },
       };
     }
 
     // 4️⃣ Candidate selected → return full candidate education details
     if (candidateId) {
       const candidateEducation = await prisma.candidateEducation.findMany({
-        where: { candidateId },
+        where: { userId: candidateId }, // ✅ corrected
         select: {
           id: true,
-          degree: {
-            select: {
-              id: true,
-              degreeName: true,
-              level: { select: { id: true, levelName: true } },
-            },
+          institution: true,
+          passingYear: true,
+          result: true,
+          level: {
+            select: { id: true, levelName: true },
           },
-          board: { select: { id: true, boardName: true } },
-          majorGroup: { select: { id: true, groupName: true } },
-          resultType: { select: { id: true, resultType: true } },
-          subjects: { select: { id: true, subjectName: true } },
+          degree: {
+            select: { id: true, degreeName: true },
+          },
+          board: {
+            select: { id: true, boardName: true },
+          },
+          majorGroup: {
+            select: { id: true, groupName: true },
+          },
+          resultType: {
+            select: { id: true, resultType: true },
+          },
+          subject: {
+            select: { id: true, subjectName: true },
+          },
+          documents: true,
         },
+        orderBy: { createdAt: 'desc' },
       });
+
       return {
-        level: 'candidate-education-detail',
+        type: 'candidate-education-detail',
         data: candidateEducation,
       };
     }
 
-    return { message: 'Invalid query' };
+    return { message: 'Invalid query parameters' };
   } catch (error) {
     console.error(error);
-    return { message: 'Error fetching education hierarchy' };
+    return { message: 'Error fetching education dropdown data' };
   }
 };
 

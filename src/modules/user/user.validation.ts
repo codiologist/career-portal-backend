@@ -162,14 +162,21 @@ export const AddressSchema = z.object({
  */
 export const multipleAddressSchema = z.array(AddressSchema).min(1);
 
-export const achievementTypeEnum = z.enum([
-  'PROFESSIONAL_CERTIFICATION',
-  'TRAINING',
-]);
-
 export const achievementSchema = z.object({
-  type: achievementTypeEnum,
-
+  id: z
+    .string()
+    .min(3, 'Title must be at least 3 characters')
+    .max(150, 'Title is too long')
+    .optional(),
+  name: z
+    .string()
+    .min(3, 'Title must be at least 3 characters')
+    .max(150, 'Title is too long'),
+  tempId: z
+    .string()
+    .min(3, 'Title must be at least 3 characters')
+    .max(150, 'Title is too long')
+    .optional(),
   title: z
     .string()
     .min(3, 'Title must be at least 3 characters')
@@ -195,12 +202,61 @@ export const achievementSchema = z.object({
 
 export const multipleAchievementSchema = z.array(achievementSchema).min(1);
 
+export const candidateEducationSchema = z.object({
+  id: z.string().uuid('Invalid Level ID format').optional(),
+  tempId: z.string().uuid('Invalid Level ID format').optional(),
+  levelId: z.string().uuid('Invalid Level ID format'),
+  degreeId: z.string().uuid('Invalid Degree ID format').optional().nullable(),
+
+  boardId: z.string().uuid('Invalid Board ID format').optional().nullable(),
+
+  subjectId: z.string().uuid('Invalid Subject ID format').optional().nullable(),
+
+  resultTypeId: z
+    .string()
+    .uuid('Invalid Result Type ID format')
+    .optional()
+    .nullable(),
+
+  majorGroupId: z
+    .string()
+    .uuid('Invalid Major Group ID format')
+    .optional()
+    .nullable(),
+
+  institution: z
+    .string()
+    .min(2, 'Institution name must be at least 2 characters')
+    .max(255, 'Institution name cannot exceed 255 characters')
+    .optional()
+    .nullable(),
+
+  passingYear: z
+    .number()
+    .int('Passing year must be an integer')
+    .min(1900, 'Passing year must be after 1900')
+    .max(new Date().getFullYear(), 'Passing year cannot be in the future')
+    .optional()
+    .nullable(),
+
+  result: z
+    .string()
+    .min(1, 'Result cannot be empty')
+    .max(20, 'Result is too long')
+    .optional()
+    .nullable(),
+});
+export const candidateEducationArraySchema = z.array(candidateEducationSchema);
+
+//////// Export all validation field ////////
+
 export const UserProfileValidation = {
   userProfileSPersonalchema,
   workExperienceArraySchema,
   AddressSchema,
   ReferanceArraySchema,
   multipleAchievementSchema,
+  candidateEducationArraySchema,
 };
 
 // TypeScript type inferred from Zod
@@ -217,4 +273,5 @@ export type TMultipleAddressInput = z.infer<typeof multipleAddressSchema>;
 // Address Type Enum
 export type TAddressType = z.infer<typeof addressTypeEnum>;
 export type TAchievementInput = z.infer<typeof achievementSchema>;
-export type TAchievementEnum = z.infer<typeof achievementTypeEnum>;
+export type TAchievementEnum = z.infer<typeof addressTypeEnum>;
+export type TMultipleEducationInput = z.infer<typeof candidateEducationSchema>;

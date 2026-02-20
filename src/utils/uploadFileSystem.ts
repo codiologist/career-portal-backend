@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import { JwtPayload } from "jsonwebtoken";
 
-export interface CustomFile extends Express.Multer.File {
+export interface TCustomFileMulter extends Express.Multer.File {
   documentType?: string;
   documentName?: string | null;
 }
@@ -13,6 +13,7 @@ export interface CustomFile extends Express.Multer.File {
 const storage = multer.diskStorage({
   destination(req, file, cb) {
     const user = req.user as JwtPayload;
+
     const userId = user?.id;
     if (!userId) return cb(new Error("User ID required"), "");
 
@@ -28,19 +29,24 @@ const storage = multer.diskStorage({
     } else if (file.fieldname === "signature") {
       folder = "signature";
       type = "SIGNATURE";
+    } else if (file.fieldname === "document") {
+      folder = "document";
+      type = "DOCUMENT";
+    }else if (file.fieldname === "achievement") {
+      folder = "achievement";
+      type = "ACHIEVEMENT";
     } else if (file.fieldname === "certificate") {
       const certificateName = req.body.certificateName || "certificate";
       const safeName = certificateName.toLowerCase().replace(/\s+/g, "-");
-
       folder = path.join("certificates", safeName);
       type = "CERTIFICATE";
     }
 
-    const uploadPath = path.join("uploads", "users", userId, folder);
+    const uploadPath = path.join("uploads", "users", user.email, folder);
     fs.mkdirSync(uploadPath, { recursive: true });
 
     // attach metadata to file object for DB save
-    const customFile = file as CustomFile;
+    const customFile = file as TCustomFileMulter;
     customFile.documentType = type;
     customFile.documentName = req.body.certificateName || null;
 
@@ -66,39 +72,5 @@ const storage = multer.diskStorage({
 
 
 
-
-const storageArray = multer.diskStorage({
-  destination(req, file, cb) {
-    const user = req.user as JwtPayload;
-    const userId = user?.id;
-
-
-    if (!userId) return cb(new Error("User ID required"), "");
-
-    let folder = "others";
-
-    if (file.fieldname.startsWith("certificate_")) {
-      folder = "certificates";
-    }
-
-    const uploadPath = path.join("uploads", "users", userId, folder);
-    fs.mkdirSync(uploadPath, { recursive: true });
-
-    cb(null, uploadPath);
-  },
-
-  filename(req, file, cb) {
-    const ext = path.extname(file.originalname);
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${unique}${ext}`);
-  },
-});
-
-
-
-
-
-
-export const uploadArray = multer({ storage: storageArray });
 export const upload = multer({storage});
 

@@ -89,7 +89,7 @@ model CandidatePersonal {
 
 model Religion {
   id                String              @id @default(uuid())
-  name              String
+  name              String              @unique
   candidatePersonal CandidatePersonal[]
 
   @@map("religions")
@@ -97,7 +97,7 @@ model Religion {
 
 model SocialLink {
   id                  String            @id @default(uuid())
-  label               String
+  label               String            @unique
   url                 String
   candidatePersonalId String            @map("candidate_personal_id")
   candidatePersonal   CandidatePersonal @relation(fields: [candidatePersonalId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -107,7 +107,7 @@ model SocialLink {
 
 model Interst {
   id                 String              @id @default(uuid())
-  interstName        String              @map("interst_name")
+  interstName        String              @unique @map("interst_name")
   candidatesPersonal CandidatePersonal[] @relation("CandidateInterests")
 
   @@map("intersts")
@@ -115,7 +115,7 @@ model Interst {
 
 model Skill {
   id                 String              @id @default(uuid())
-  skillName          String              @map("skill_name")
+  skillName          String              @unique @map("skill_name")
   candidatesPersonal CandidatePersonal[] @relation("CandidateSkills")
 
   @@map("skills")
@@ -123,7 +123,7 @@ model Skill {
 
 model BloodGroup {
   id                 String              @id @default(uuid())
-  name               String
+  name               String              @unique
   candidatePersonals CandidatePersonal[]
 
   @@map("blood_groups")
@@ -289,17 +289,12 @@ model CandidateLanguage {
   @@map("candidate_languages")
 }
 
-enum AchievementType {
-  PROFESSIONAL_CERTIFICATION
-  TRAINING
-}
-
 model CandidateAchievement {
   id String @id @default(uuid())
 
-  type             AchievementType
+  name             String
   title            String
-  organizationName String          @map("organization_name")
+  organizationName String  @map("organization_name")
   url              String?
   location         String
   year             Int
@@ -318,19 +313,12 @@ model CandidateAchievement {
 
 ///////////////////////////////////  Candidate document ///////////////////////////////////////////
 
-enum DocumentType {
-  AVATAR
-  RESUME
-  SIGNATURE
-  CERTIFICATE
-  OTHER
-}
-
 model Document {
   id String @id @default(uuid())
 
-  type                  DocumentType
+  type                  String
   name                  String? // Certificate name or custom file name
+  folderName            String?              @map("folder_name")
   documentNo            String?              @map("document_no")
   issueDate             DateTime?            @map("issue_date")
   issueAuthority        String?              @map("issue_authority")
