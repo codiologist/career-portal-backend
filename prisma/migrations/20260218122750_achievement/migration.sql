@@ -36,6 +36,9 @@ ALTER TABLE "candidate_references" DROP COLUMN "companyName",
 ADD COLUMN     "company_name" TEXT;
 
 -- AlterTable
+ALTER TABLE "documents" ADD COLUMN     "is_deleted" BOOLEAN NOT NULL DEFAULT false;
+
+-- AlterTable
 ALTER TABLE "subjects" DROP COLUMN "user_id";
 
 -- CreateTable

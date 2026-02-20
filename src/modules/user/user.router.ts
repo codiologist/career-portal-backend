@@ -54,7 +54,7 @@ router.post(
 router.post(
   '/profile/achievement',
   auth(AuthGard.USER),
-   uploadArray.array("files"),
+  uploadArray.array('files'),
   // validationSchema(multipleAchievementSchema),
   UserController.createCandidateAchievement,
 );
@@ -75,12 +75,7 @@ router.get(
   '/profile/address/dropdown',
   UserController.getDivisionWithDistrictsAndUpazilas,
 );
-router.get(
-  '/profile/education/dropdown',
-  UserController.getEducationDropdown,
-);
-
-
+router.get('/profile/education/dropdown', UserController.getEducationDropdown);
 
 /////user address /////
 

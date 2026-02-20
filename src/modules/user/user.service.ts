@@ -105,8 +105,6 @@ const createCandidateExperienceService = async (
   return result;
 };
 
-
-
 const createCandidateEducationService = async (
   payload: any,
   user: TUserPayload,
@@ -114,7 +112,6 @@ const createCandidateEducationService = async (
   const result = await prisma.candidateEducation.create({
     data: {
       userId: user.id,
-
     },
   });
 
@@ -195,16 +192,12 @@ const createCandidateAchievement = async (
   user: TUserPayload,
 ) => {
   if (files.length < 0) {
-    throw new AppError(500, "files not found please select files")
+    throw new AppError(500, 'files not found please select files');
   }
-
-
-
 
   const userId = user.id;
 
-  console.log(payload, files, user)
-
+  console.log(payload, files, user);
 
   const result = await prisma.$transaction(async (tx) => {
     // 1️⃣ Delete old achievements + documents
@@ -234,8 +227,8 @@ const createCandidateAchievement = async (
           year: item.year,
         },
         include: {
-          documents: true
-        }
+          documents: true,
+        },
       });
 
       createdAchievements.push(achievement);
@@ -247,7 +240,7 @@ const createCandidateAchievement = async (
         await tx.document.create({
           data: {
             userId,
-            type: "OTHER",
+            type: 'OTHER',
             name: item.type,
             path: file.path,
             size: file.size,
@@ -328,18 +321,22 @@ const me = async (user: TUserPayload) => {
           },
         },
       },
-      documents: true,
+      documents: {
+        where: {
+          isDeleted: false,
+        },
+      },
       candidateExperiences: true,
       candidateReferences: true,
       candidateAchievements: {
         include: {
           documents: {
             where: {
-              isDeleted: false
-            }
-          }
-        }
-      }
+              isDeleted: false,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -518,7 +515,13 @@ const getEducationDropdown = async (payload: {
         where: { candidateId },
         select: {
           id: true,
-          degree: { select: { id: true, degreeName: true, level: { select: { id: true, levelName: true } } } },
+          degree: {
+            select: {
+              id: true,
+              degreeName: true,
+              level: { select: { id: true, levelName: true } },
+            },
+          },
           board: { select: { id: true, boardName: true } },
           majorGroup: { select: { id: true, groupName: true } },
           resultType: { select: { id: true, resultType: true } },
@@ -538,9 +541,6 @@ const getEducationDropdown = async (payload: {
   }
 };
 
-
-
-
 export const UserService = {
   createCandidatePersonalService,
   createCandidateExperienceService,
@@ -552,5 +552,5 @@ export const UserService = {
   createCandidateReference,
   createCandidateAddress,
   createCandidateAchievement,
-  getEducationDropdown
+  getEducationDropdown,
 };

@@ -292,14 +292,6 @@ model CandidateLanguage {
 enum AchievementType {
   PROFESSIONAL_CERTIFICATION
   TRAINING
-  WORKSHOP
-  SEMINAR
-  AWARD
-  HONOR
-  COMPETITION
-  PUBLICATION
-  PROJECT
-  OTHER
 }
 
 model CandidateAchievement {

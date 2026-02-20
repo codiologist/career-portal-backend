@@ -130,15 +130,10 @@ export const addressTypeEnum = z.enum(['PRESENT', 'PERMANENT']);
  * Single Address Schema
  */
 
-
 export const AddressSchema = z.object({
-  divisionId: z
-    .number()
-    .int("Division must be a valid number"),
+  divisionId: z.number().int('Division must be a valid number'),
 
-  districtId: z
-    .number()
-    .int("District must be a valid number"),
+  districtId: z.number().int('District must be a valid number'),
 
   upazilaId: z.number().int().optional().nullable(),
   cityCorporationId: z.number().int().optional().nullable(),
@@ -149,19 +144,17 @@ export const AddressSchema = z.object({
 
   wardNo: z
     .string()
-    .max(10, "Ward number cannot exceed 10 characters")
+    .max(10, 'Ward number cannot exceed 10 characters')
     .optional()
     .nullable(),
 
-  addressLine: z
-    .string()
-    .min(5, "Address must be at least 5 characters"),
+  addressLine: z.string().min(5, 'Address must be at least 5 characters'),
 
   isSameAsPresent: z.boolean().optional().default(false),
 
   addressTypeId: z
     .string()
-    .min(5, "Address type ID must be at least 5 characters"),
+    .min(5, 'Address type ID must be at least 5 characters'),
 });
 
 /**
@@ -172,14 +165,6 @@ export const multipleAddressSchema = z.array(AddressSchema).min(1);
 export const achievementTypeEnum = z.enum([
   'PROFESSIONAL_CERTIFICATION',
   'TRAINING',
-  'WORKSHOP',
-  'SEMINAR',
-  'AWARD',
-  'HONOR',
-  'COMPETITION',
-  'PUBLICATION',
-  'PROJECT',
-  'OTHER',
 ]);
 
 export const achievementSchema = z.object({
@@ -209,8 +194,6 @@ export const achievementSchema = z.object({
 });
 
 export const multipleAchievementSchema = z.array(achievementSchema).min(1);
-
-
 
 export const UserProfileValidation = {
   userProfileSPersonalchema,
