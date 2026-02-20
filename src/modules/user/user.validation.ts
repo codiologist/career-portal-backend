@@ -129,15 +129,10 @@ export const addressTypeEnum = z.enum(['PRESENT', 'PERMANENT']);
  * Single Address Schema
  */
 
-
 export const AddressSchema = z.object({
-  divisionId: z
-    .number()
-    .int("Division must be a valid number"),
+  divisionId: z.number().int('Division must be a valid number'),
 
-  districtId: z
-    .number()
-    .int("District must be a valid number"),
+  districtId: z.number().int('District must be a valid number'),
 
   upazilaId: z.number().int().optional().nullable(),
   cityCorporationId: z.number().int().optional().nullable(),
@@ -148,19 +143,17 @@ export const AddressSchema = z.object({
 
   wardNo: z
     .string()
-    .max(10, "Ward number cannot exceed 10 characters")
+    .max(10, 'Ward number cannot exceed 10 characters')
     .optional()
     .nullable(),
 
-  addressLine: z
-    .string()
-    .min(5, "Address must be at least 5 characters"),
+  addressLine: z.string().min(5, 'Address must be at least 5 characters'),
 
   isSameAsPresent: z.boolean().optional().default(false),
 
   addressTypeId: z
     .string()
-    .min(5, "Address type ID must be at least 5 characters"),
+    .min(5, 'Address type ID must be at least 5 characters'),
 });
 
 /**
@@ -168,16 +161,14 @@ export const AddressSchema = z.object({
  */
 export const multipleAddressSchema = z.array(AddressSchema).min(1);
 
-
-
-
 export const achievementSchema = z.object({
   id: z.string()
     .min(3, 'Title must be at least 3 characters')
     .max(150, 'Title is too long').optional(),
   tempId: z.string()
     .min(3, 'Title must be at least 3 characters')
-    .max(150, 'Title is too long').optional(),
+    .max(150, 'Title is too long')
+    .optional(),
   title: z
     .string()
     .min(3, 'Title must be at least 3 characters')
@@ -222,44 +213,35 @@ export const candidateEducationSchema = z.object({
     .uuid("Invalid Result Type ID format")
     .nullable(),
 
-  boardId: z
-    .string()
-    .uuid("Invalid Board ID format")
-    .optional()
-    .nullable(),
+  boardId: z.string().uuid('Invalid Board ID format').optional().nullable(),
 
-  subjectId: z
-    .string()
-    .uuid("Invalid Subject ID format")
-    .optional()
-    .nullable(),
-
+  subjectId: z.string().uuid('Invalid Subject ID format').optional().nullable(),
 
   majorGroupId: z
     .string()
-    .uuid("Invalid Major Group ID format")
+    .uuid('Invalid Major Group ID format')
     .optional()
     .nullable(),
 
   institution: z
     .string()
-    .min(2, "Institution name must be at least 2 characters")
-    .max(255, "Institution name cannot exceed 255 characters")
+    .min(2, 'Institution name must be at least 2 characters')
+    .max(255, 'Institution name cannot exceed 255 characters')
     .optional()
     .nullable(),
 
   passingYear: z
     .number()
-    .int("Passing year must be an integer")
-    .min(1900, "Passing year must be after 1900")
-    .max(new Date().getFullYear(), "Passing year cannot be in the future")
+    .int('Passing year must be an integer')
+    .min(1900, 'Passing year must be after 1900')
+    .max(new Date().getFullYear(), 'Passing year cannot be in the future')
     .optional()
     .nullable(),
 
   result: z
     .string()
-    .min(1, "Result cannot be empty")
-    .max(20, "Result is too long")
+    .min(1, 'Result cannot be empty')
+    .max(20, 'Result is too long')
     .optional()
     .nullable(),
 });
@@ -273,7 +255,7 @@ export const UserProfileValidation = {
   AddressSchema,
   ReferanceArraySchema,
   multipleAchievementSchema,
-  candidateEducationArraySchema
+  candidateEducationArraySchema,
 };
 
 // TypeScript type inferred from Zod

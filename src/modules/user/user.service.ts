@@ -114,7 +114,7 @@ const createCandidateEducationService = async (
   const userId = user.id;
 
   if (!payload || payload.length === 0) {
-    throw new AppError(400, "Education payload is required");
+    throw new AppError(400, 'Education payload is required');
   }
 
   // 🔥 Create file map using tempId
@@ -308,7 +308,7 @@ const createCandidateAchievement = async (
   const userId = user.id;
 
   if (!payload || payload.length === 0) {
-    throw new AppError(400, "Achievement payload is required");
+    throw new AppError(400, 'Achievement payload is required');
   }
 
   // 🔥 Create file map by tempId
@@ -316,7 +316,7 @@ const createCandidateAchievement = async (
 
   if (files && files.length > 0) {
     files.forEach((file) => {
-      const tempId = file.fieldname.split("_")[1];
+      const tempId = file.fieldname.split('_')[1];
       fileMap.set(tempId, file);
     });
   }
@@ -331,9 +331,11 @@ const createCandidateAchievement = async (
 
     const existingIds = existingAchievements.map((item) => item.id);
 
-    const incomingIds = payload.filter((item) => item.id).map((item) => item.id);
+    const incomingIds = payload
+      .filter((item) => item.id)
+      .map((item) => item.id);
     // 🔥 2. Delete removed achievements
-    const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id),);
+    const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
 
     if (idsToDelete.length > 0) {
       await tx.document.deleteMany({
@@ -511,7 +513,7 @@ const me = async (user: TUserPayload) => {
           phone: true,
           emailAddress: true,
           relationship: true,
-        }
+        },
       },
       candidateAchievements: {
         include: {
@@ -524,10 +526,10 @@ const me = async (user: TUserPayload) => {
               path: true,
             },
             where: {
-              isDeleted: false
-            }
-          }
-        }
+              isDeleted: false,
+            },
+          },
+        },
       },
       candidateEducations: {
         select: {
@@ -537,39 +539,39 @@ const me = async (user: TUserPayload) => {
           result: true,
           board: {
             select: {
-              boardName: true
-            }
+              boardName: true,
+            },
           },
 
           degree: {
             select: {
-              degreeName: true
-            }
+              degreeName: true,
+            },
           },
           level: {
             select: {
-              levelName: true
-            }
+              levelName: true,
+            },
           },
           majorGroup: {
             select: {
-              groupName: true
-            }
+              groupName: true,
+            },
           },
           resultType: {
             select: {
-              resultType: true
-            }
+              resultType: true,
+            },
           },
           subject: {
             select: {
-              subjectName: true
-            }
+              subjectName: true,
+            },
           },
 
           documents: {
             where: {
-              isDeleted: false
+              isDeleted: false,
             },
             select: {
               id: true,
@@ -725,10 +727,10 @@ const getEducationDropdown = async (payload: {
           id: true,
           levelName: true,
         },
-        orderBy: { levelName: "asc" },
+        orderBy: { levelName: 'asc' },
       });
 
-      return { type: "level", data: levels };
+      return { type: 'level', data: levels };
     }
 
     // 2️⃣ Level selected → return degrees under that level
@@ -740,37 +742,37 @@ const getEducationDropdown = async (payload: {
           degreeName: true,
           levelId: true,
         },
-        orderBy: { degreeName: "asc" },
+        orderBy: { degreeName: 'asc' },
       });
 
-      return { type: "degree", data: degrees };
+      return { type: 'degree', data: degrees };
     }
 
     // 3️⃣ Degree selected → return related dropdown data (board, group, resultType)
     if (degreeId && !candidateId) {
       const boards = await prisma.educationBoard.findMany({
         select: { id: true, boardName: true },
-        orderBy: { boardName: "asc" },
+        orderBy: { boardName: 'asc' },
       });
 
       const majorGroups = await prisma.majorGroup.findMany({
         select: { id: true, groupName: true },
-        orderBy: { groupName: "asc" },
+        orderBy: { groupName: 'asc' },
       });
 
       const resultTypes = await prisma.resultType.findMany({
         select: { id: true, resultType: true },
-        orderBy: { resultType: "asc" },
+        orderBy: { resultType: 'asc' },
       });
 
       const subjects = await prisma.subject.findMany({
         where: { status: true },
         select: { id: true, subjectName: true },
-        orderBy: { subjectName: "asc" },
+        orderBy: { subjectName: 'asc' },
       });
 
       return {
-        type: "education-meta",
+        type: 'education-meta',
         data: {
           boards,
           majorGroups,
@@ -809,24 +811,21 @@ const getEducationDropdown = async (payload: {
           },
           documents: true,
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { createdAt: 'desc' },
       });
 
       return {
-        type: "candidate-education-detail",
+        type: 'candidate-education-detail',
         data: candidateEducation,
       };
     }
 
-    return { message: "Invalid query parameters" };
+    return { message: 'Invalid query parameters' };
   } catch (error) {
     console.error(error);
-    return { message: "Error fetching education dropdown data" };
+    return { message: 'Error fetching education dropdown data' };
   }
 };
-
-
-
 
 export const UserService = {
   createCandidatePersonalService,
@@ -839,5 +838,5 @@ export const UserService = {
   createCandidateReference,
   createCandidateAddress,
   createCandidateAchievement,
-  getEducationDropdown
+  getEducationDropdown,
 };
