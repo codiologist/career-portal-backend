@@ -206,17 +206,13 @@ export const candidateEducationSchema = z.object({
   id: z.string().uuid('Invalid Level ID format').optional(),
   tempId: z.string().uuid('Invalid Level ID format').optional(),
   levelId: z.string().uuid('Invalid Level ID format'),
-  degreeId: z.string().uuid('Invalid Degree ID format').optional().nullable(),
+  degreeId: z.string().uuid('Invalid Degree ID format').nullable(),
+
+  resultTypeId: z.string().uuid('Invalid Result Type ID format').nullable(),
 
   boardId: z.string().uuid('Invalid Board ID format').optional().nullable(),
 
   subjectId: z.string().uuid('Invalid Subject ID format').optional().nullable(),
-
-  resultTypeId: z
-    .string()
-    .uuid('Invalid Result Type ID format')
-    .optional()
-    .nullable(),
 
   majorGroupId: z
     .string()

@@ -139,7 +139,7 @@ const uploadSDocument = async (file: TCustomFileMulter, user: TUserPayload, payl
       // You need a unique constraint on (userId + name) in your Prisma schema
       userId_name: {
         userId: user.id,
-        name: payload.name
+        name: payload.type
       },
     },
     update: {
