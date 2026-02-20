@@ -209,7 +209,7 @@ CREATE TABLE "candidate_languages" (
 -- CreateTable
 CREATE TABLE "candidate_achievements" (
     "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
+    "achievement_type" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "organization_name" TEXT NOT NULL,
     "url" TEXT,
@@ -217,8 +217,8 @@ CREATE TABLE "candidate_achievements" (
     "year" INTEGER NOT NULL,
     "description" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "candidate_achievements_pkey" PRIMARY KEY ("id")
 );
@@ -238,6 +238,7 @@ CREATE TABLE "documents" (
     "mime_type" TEXT NOT NULL,
     "is_deleted" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
     "user_id" TEXT NOT NULL,
     "candidate_experience_id" TEXT,
     "candidate_education_id" TEXT,
@@ -457,9 +458,6 @@ CREATE UNIQUE INDEX "candidate_experiences_user_id_company_name_designation_depa
 
 -- CreateIndex
 CREATE INDEX "documents_user_id_idx" ON "documents"("user_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "documents_user_id_key" ON "documents"("user_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "address_user_id_address_type_id_key" ON "address"("user_id", "address_type_id");

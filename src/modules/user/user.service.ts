@@ -122,14 +122,12 @@ const createCandidateEducationService = async (
 
   if (files && files.length > 0) {
     files.forEach((file) => {
-      const tempId = file.fieldname.split("_")[1];
+      const tempId = file.fieldname.split('_')[1];
       fileMap.set(tempId, file);
     });
   }
 
-
   const result = await prisma.$transaction(async (tx) => {
-
     // 🔥 1. Get existing educations
     const existingEducations = await tx.candidateEducation.findMany({
       where: { userId },
@@ -143,9 +141,7 @@ const createCandidateEducationService = async (
       .map((item) => item.id);
 
     // 🔥 2. Delete removed educations
-    const idsToDelete = existingIds.filter(
-      (id) => !incomingIds.includes(id)
-    );
+    const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
 
     if (idsToDelete.length > 0) {
       // delete related documents first
@@ -198,11 +194,10 @@ const createCandidateEducationService = async (
 
       finalEducations.push(education);
 
-      console.log(fileMap)
+      console.log(fileMap);
 
       // 🔥 4. Handle File (Replace old certificate)
       const file = fileMap.get(item.tempId!);
-
 
       if (file) {
         // delete old certificate
@@ -215,7 +210,7 @@ const createCandidateEducationService = async (
         await tx.document.create({
           data: {
             userId,
-            type: "CERTIFICATE",
+            type: 'CERTIFICATE',
             folderName: file.fieldname,
             path: file.path,
             size: file.size,
@@ -317,10 +312,10 @@ const createCandidateAchievement = async (
   if (files && files.length > 0) {
     files.forEach((file) => {
       const tempId = file.fieldname.split('_')[1];
+
       fileMap.set(tempId, file);
     });
   }
-
 
   const result = await prisma.$transaction(async (tx) => {
     // 🔥 1. Get existing achievements
@@ -360,6 +355,7 @@ const createCandidateAchievement = async (
         achievement = await tx.candidateAchievement.update({
           where: { id: item.id },
           data: {
+            achievementType: item.achievementType,
             title: item.title,
             description: item.description,
             organizationName: item.organizationName,
@@ -373,6 +369,7 @@ const createCandidateAchievement = async (
         achievement = await tx.candidateAchievement.create({
           data: {
             userId,
+            achievementType: item.achievementType,
             title: item.title,
             description: item.description,
             organizationName: item.organizationName,
@@ -385,11 +382,10 @@ const createCandidateAchievement = async (
 
       finalAchievements.push(achievement);
 
-      console.log("file map", fileMap)
+      console.log('file map', fileMap);
 
       // 🔥 4. Handle File
       const file = fileMap.get(item.tempId!);
-
 
       if (file) {
         // Delete old document (replace file)
@@ -402,7 +398,7 @@ const createCandidateAchievement = async (
         await tx.document.create({
           data: {
             userId,
-            type: "ACHIEVEMENT",
+            type: 'ACHIEVEMENT',
             name: item.title,
             folderName: file.fieldname,
             path: file.path,
@@ -487,9 +483,9 @@ const me = async (user: TUserPayload) => {
       documents: {
         where: {
           type: {
-            notIn: ["CERTIFICATE", "ACHIEVEMENT"]
+            notIn: ['CERTIFICATE', 'ACHIEVEMENT'],
           },
-          isDeleted: false
+          isDeleted: false,
         },
         select: {
           id: true,
@@ -500,8 +496,8 @@ const me = async (user: TUserPayload) => {
           remarks: true,
           documentNo: true,
           isDeleted: true,
-          issueAuthority: true
-        }
+          issueAuthority: true,
+        },
       },
       candidateExperiences: true,
       candidateReferences: {
@@ -582,11 +578,11 @@ const me = async (user: TUserPayload) => {
               remarks: true,
               documentNo: true,
               isDeleted: true,
-              issueAuthority: true
-            }
-          }
-        }
-      }
+              issueAuthority: true,
+            },
+          },
+        },
+      },
     },
   });
 

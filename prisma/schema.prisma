@@ -290,8 +290,8 @@ model CandidateLanguage {
 }
 
 model CandidateAchievement {
-  id String @id @default(uuid())
-
+  id               String  @id @default(uuid())
+  achievementType  String  @map("achievement_type")
   title            String
   organizationName String  @map("organization_name")
   url              String?
@@ -339,7 +339,6 @@ model Document {
 
   candidateAchievementId String?               @map("candidate_achievement_id")
   candidateAchievement   CandidateAchievement? @relation(fields: [candidateAchievementId], references: [id], onDelete: Cascade)
-
 
   @@index([userId])
   @@map("documents")
