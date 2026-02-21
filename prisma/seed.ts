@@ -15,19 +15,19 @@ async function main() {
   console.log('🌱 Seeding Education data Types...');
   // 1. Result Types (Standard in BD)
   const resultTypes = [
-    { name: 'First Division/Class' },
-    { name: 'Second Division/Class' },
-    { name: 'Third Division/Class' },
-    { name: 'Grade' },
-    { name: 'Appeared' },
-    { name: 'Pass' },
+    { name: 'First Division/Class', orderBy: 1 },
+    { name: 'Second Division/Class', orderBy: 2 },
+    { name: 'Third Division/Class', orderBy: 3 },
+    { name: 'Grade', orderBy: 4 },
+    { name: 'Appeared', orderBy: 5 },
+    { name: 'Pass', orderBy: 6 },
   ];
 
   for (const type of resultTypes) {
     await prisma.resultType.upsert({
-      where: { resultType: type.name },
+      where: { resultType: type.name, orderBy: type.orderBy },
       update: {},
-      create: { resultType: type.name },
+      create: { resultType: type.name, orderBy: type.orderBy },
     });
   }
 

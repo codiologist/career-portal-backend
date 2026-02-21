@@ -155,6 +155,7 @@ CREATE TABLE "major_groups" (
 CREATE TABLE "result_types" (
     "id" TEXT NOT NULL,
     "result_type" TEXT NOT NULL,
+    "order_by" INTEGER NOT NULL,
 
     CONSTRAINT "result_types_pkey" PRIMARY KEY ("id")
 );
@@ -452,6 +453,9 @@ CREATE UNIQUE INDEX "major_groups_group_name_key" ON "major_groups"("group_name"
 
 -- CreateIndex
 CREATE UNIQUE INDEX "result_types_result_type_key" ON "result_types"("result_type");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "result_types_order_by_key" ON "result_types"("order_by");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "candidate_experiences_user_id_company_name_designation_depa_key" ON "candidate_experiences"("user_id", "company_name", "designation", "department", "company_business_type", "responsibilities");

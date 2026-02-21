@@ -757,8 +757,8 @@ const getEducationDropdown = async (payload: {
       });
 
       const resultTypes = await prisma.resultType.findMany({
-        select: { id: true, resultType: true },
-        orderBy: { resultType: 'asc' },
+        select: { id: true, resultType: true, orderBy: true },
+        orderBy: { orderBy: 'asc' },
       });
 
       const subjects = await prisma.subject.findMany({

@@ -215,8 +215,10 @@ model MajorGroup {
 }
 
 model ResultType {
-  id                  String               @id @default(uuid())
-  resultType          String               @unique @map("result_type")
+  id         String @id @default(uuid())
+  resultType String @unique @map("result_type")
+  orderBy    Int    @unique @map("order_by")
+
   candidateEducations CandidateEducation[]
 
   @@map("result_types")
