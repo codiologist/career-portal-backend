@@ -2,6 +2,9 @@
 CREATE TYPE "Role" AS ENUM ('HR', 'USER', 'ADMIN', 'MODERATOR');
 
 -- CreateEnum
+CREATE TYPE "achievementTypeEnum" AS ENUM ('PROFESSIONAL_CERTIFICATION', 'TRAINING', 'WORKSHOP');
+
+-- CreateEnum
 CREATE TYPE "AddressTypeEnum" AS ENUM ('PRESENT', 'PERMANENT');
 
 -- CreateTable
@@ -213,7 +216,7 @@ CREATE TABLE "candidate_languages" (
 -- CreateTable
 CREATE TABLE "candidate_achievements" (
     "id" TEXT NOT NULL,
-    "achievement_type" TEXT NOT NULL,
+    "achievement_type" "achievementTypeEnum",
     "title" TEXT NOT NULL,
     "organization_name" TEXT NOT NULL,
     "url" TEXT,

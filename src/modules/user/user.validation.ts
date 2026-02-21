@@ -205,57 +205,52 @@ export const achievementSchema = z.object({
 
 export const multipleAchievementSchema = z.array(achievementSchema).min(1);
 
+
 export const candidateEducationSchema = z.object({
   id: z.string().uuid('Invalid Level ID format').optional(),
 
   levelId: z.string().uuid('Invalid Level ID format'),
-  degreeId: z.string().uuid('Invalid Degree ID format').nullable(),
+  degreeId: z.string().uuid('Invalid Degree ID format'),
   tempId: z
     .string()
     .min(3, 'Title must be at least 3 characters')
     .max(150, 'Title is too long')
     .optional(),
-  resultTypeId: z.string().uuid('Invalid Result Type ID format').nullable(),
+  resultTypeId: z.string().uuid('Invalid Result Type ID format'),
 
-  boardId: z.string().uuid('Invalid Board ID format').optional().nullable(),
+  boardId: z.string().uuid('Invalid Board ID format').optional(),
 
-  subjectId: z.string().uuid('Invalid Subject ID format').optional().nullable(),
+  subjectId: z.string().uuid('Invalid Subject ID format').optional(),
 
   majorGroupId: z
     .string()
     .uuid('Invalid Major Group ID format')
-    .optional()
-    .nullable(),
+    .optional(),
 
   subjectName: z
     .string()
     .min(2, 'Subject name must be at least 2 characters')
-    .max(100, 'Subject name cannot exceed 100 characters')
-    .optional()
-    .nullable(),
+    .max(100, 'Subject name cannot exceed 100 characters'),
 
   instituteName: z
     .string()
     .min(2, 'Institute name must be at least 2 characters')
-    .max(255, 'Institute name cannot exceed 255 characters')
-    .optional()
-    .nullable(),
+    .max(255, 'Institute name cannot exceed 255 characters'),
 
   passingYear: z
     .number()
     .int('Passing year must be an integer')
     .min(1900, 'Passing year must be after 1900')
-    .max(new Date().getFullYear(), 'Passing year cannot be in the future')
-    .optional()
-    .nullable(),
+    .max(new Date().getFullYear(), 'Passing year cannot be in the future'),
 
   totalMarksCGPA: z
     .string()
     .min(1, 'Total Marks/CGPA cannot be empty')
-    .max(20, 'Total Marks/CGPA is too long')
-    .optional()
-    .nullable(),
+    .max(20, 'Total Marks/CGPA is too long'),
 });
+
+
+
 export const candidateEducationArraySchema = z.array(candidateEducationSchema);
 
 //////// Export all validation field ////////

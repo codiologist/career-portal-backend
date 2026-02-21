@@ -169,6 +169,8 @@ model CandidateEducation {
   @@map("candidate_educations")
 }
 
+
+
 model LevelOfEducation {
   id        String @id @default(uuid())
   levelName String @unique @map("level_name")

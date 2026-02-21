@@ -160,17 +160,15 @@ const createCandidateEducationService = async (
       const educationData = {
         userId,
         levelId: item.levelId,
-        degreeId: item.degreeId ?? null,
-        boardId: item.boardId ?? null,
-        subjectId: item.subjectId ?? null,
-        resultTypeId: item.resultTypeId ?? null,
-        majorGroupId: item.majorGroupId ?? null,
-        subjectName: item.subjectName ?? null,
-        instituteName: item.instituteName ?? null,
-        passingYear: item.passingYear
-          ? parseInt(String(item.passingYear))
-          : null,
-        totalMarksCGPA: item.totalMarksCGPA ?? null,
+        degreeId: item.degreeId ,
+        boardId: item.boardId ,
+        subjectId: item.subjectId ,
+        resultTypeId: item.resultTypeId ,
+        majorGroupId: item.majorGroupId ,
+        subjectName: item.subjectName ,
+        instituteName: item.instituteName ,
+        passingYear: item.passingYear,
+        totalMarksCGPA: item.totalMarksCGPA ,
       };
 
       let education;
@@ -216,6 +214,9 @@ const createCandidateEducationService = async (
 
   return result;
 };
+
+
+
 
 const createCandidateReference = async (
   payload: TReferance[],
@@ -377,7 +378,7 @@ const createCandidateAchievement = async (
         await tx.document.create({
           data: {
             userId,
-            type: 'ACHIEVEMENT',
+            type: "ACHIEVEMENT",
             name: item.title,
             folderName: file.fieldname,
             path: file.path,
@@ -394,9 +395,6 @@ const createCandidateAchievement = async (
 
   return result;
 };
-
-
-
 
 
 const me = async (user: TUserPayload) => {

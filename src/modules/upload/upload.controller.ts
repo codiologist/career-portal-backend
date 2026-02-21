@@ -66,7 +66,7 @@ const uploadDocument = catchAsync(async (req, res) => {
 
 const deleteDocumentSingle = catchAsync(async (req, res) => {
   const { id } = req.params
-  const result = await UploadService.deleteDocumentSingle(id)
+  const result = await UploadService.deleteDocumentSingle(id as string)
   res.status(201).json({
     status: true,
     message: 'Document delete successfully',
