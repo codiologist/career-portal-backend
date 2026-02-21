@@ -15,19 +15,19 @@ async function main() {
   console.log('🌱 Seeding Education data Types...');
   // 1. Result Types (Standard in BD)
   const resultTypes = [
-    { name: 'First Division/Class', orderBy: 1 },
-    { name: 'Second Division/Class', orderBy: 2 },
-    { name: 'Third Division/Class', orderBy: 3 },
-    { name: 'Grade', orderBy: 4 },
-    { name: 'Appeared', orderBy: 5 },
-    { name: 'Pass', orderBy: 6 },
+    { name: 'First Division/Class', serialNo: 1 },
+    { name: 'Second Division/Class', serialNo: 2 },
+    { name: 'Third Division/Class', serialNo: 3 },
+    { name: 'Grade', serialNo: 4 },
+    { name: 'Appeared', serialNo: 5 },
+    { name: 'Pass', serialNo: 6 },
   ];
 
   for (const type of resultTypes) {
     await prisma.resultType.upsert({
-      where: { resultType: type.name, orderBy: type.orderBy },
+      where: { resultType: type.name, orderBy: type.serialNo },
       update: {},
-      create: { resultType: type.name, orderBy: type.orderBy },
+      create: { resultType: type.name, orderBy: type.serialNo },
     });
   }
 
@@ -56,17 +56,17 @@ async function main() {
 
   // 3. Major Groups (SSC/HSC level)
   const groups = [
-    'Science',
-    'Commerce',
-    'Arts/Humanities',
-    'General',
-    'Vocational',
+    { groupName: 'Science', orderBy: 1 },
+    { groupName: 'Commerce', orderBy: 2 },
+    { groupName: 'Arts/Humanities', orderBy: 3 },
+    { groupName: 'General', orderBy: 4 },
+    { groupName: 'Vocational', orderBy: 5 },
   ];
   for (const group of groups) {
     await prisma.majorGroup.upsert({
-      where: { groupName: group },
+      where: { groupName: group.groupName, orderBy: group.orderBy },
       update: {},
-      create: { groupName: group },
+      create: { groupName: group.groupName, orderBy: group.orderBy },
     });
   }
 
@@ -120,11 +120,11 @@ async function main() {
     // },
   ];
 
-  for (const item of educationHierarchy) {
+  for (const [index, item] of educationHierarchy.entries()) {
     const level = await prisma.levelOfEducation.upsert({
       where: { levelName: item.level },
       update: {},
-      create: { levelName: item.level },
+      create: { levelName: item.level, orderBy: index + 1 },
     });
 
     for (const dName of item.degrees) {

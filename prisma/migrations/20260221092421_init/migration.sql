@@ -100,9 +100,10 @@ CREATE TABLE "candidate_educations" (
     "subject_id" TEXT,
     "result_type_id" TEXT,
     "major_group_id" TEXT,
-    "institution" TEXT,
-    "passingYear" INTEGER,
-    "result" TEXT,
+    "subject_name" TEXT NOT NULL,
+    "institute_name" TEXT NOT NULL,
+    "passing_year" INTEGER NOT NULL,
+    "total_marks_cgpa" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -113,6 +114,7 @@ CREATE TABLE "candidate_educations" (
 CREATE TABLE "level_of_educations" (
     "id" TEXT NOT NULL,
     "level_name" TEXT NOT NULL,
+    "order_by" INTEGER NOT NULL,
 
     CONSTRAINT "level_of_educations_pkey" PRIMARY KEY ("id")
 );
@@ -147,6 +149,7 @@ CREATE TABLE "subjects" (
 CREATE TABLE "major_groups" (
     "id" TEXT NOT NULL,
     "group_name" TEXT NOT NULL,
+    "order_by" INTEGER NOT NULL,
 
     CONSTRAINT "major_groups_pkey" PRIMARY KEY ("id")
 );
@@ -443,6 +446,9 @@ CREATE UNIQUE INDEX "blood_groups_name_key" ON "blood_groups"("name");
 CREATE UNIQUE INDEX "level_of_educations_level_name_key" ON "level_of_educations"("level_name");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "level_of_educations_order_by_key" ON "level_of_educations"("order_by");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "education_boards_board_name_key" ON "education_boards"("board_name");
 
 -- CreateIndex
@@ -450,6 +456,9 @@ CREATE UNIQUE INDEX "subjects_subject_name_key" ON "subjects"("subject_name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "major_groups_group_name_key" ON "major_groups"("group_name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "major_groups_order_by_key" ON "major_groups"("order_by");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "result_types_result_type_key" ON "result_types"("result_type");

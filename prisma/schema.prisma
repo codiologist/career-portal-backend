@@ -156,9 +156,10 @@ model CandidateEducation {
   majorGroupId String?     @map("major_group_id")
   majorGroup   MajorGroup? @relation(fields: [majorGroupId], references: [id])
 
-  institution String?
-  passingYear Int?
-  result      String?
+  subjectName    String @map("subject_name")
+  instituteName  String @map("institute_name")
+  passingYear    Int    @map("passing_year")
+  totalMarksCGPA String @map("total_marks_cgpa")
 
   documents Document[]
 
@@ -171,6 +172,7 @@ model CandidateEducation {
 model LevelOfEducation {
   id        String @id @default(uuid())
   levelName String @unique @map("level_name")
+  orderBy   Int    @unique @map("order_by")
 
   degrees             Degree[]
   candidateEducations CandidateEducation[]
@@ -190,16 +192,18 @@ model Degree {
 }
 
 model EducationBoard {
-  id                  String               @id @default(uuid())
-  boardName           String               @unique @map("board_name")
+  id        String @id @default(uuid())
+  boardName String @unique @map("board_name")
+
   candidateEducations CandidateEducation[]
 
   @@map("education_boards")
 }
 
 model Subject {
-  id                  String               @id @default(uuid())
-  subjectName         String               @unique @map("subject_name")
+  id          String @id @default(uuid())
+  subjectName String @unique @map("subject_name")
+
   status              Boolean              @default(true)
   candidateEducations CandidateEducation[]
 
@@ -207,8 +211,10 @@ model Subject {
 }
 
 model MajorGroup {
-  id                  String               @id @default(uuid())
-  groupName           String               @unique @map("group_name")
+  id        String @id @default(uuid())
+  groupName String @unique @map("group_name")
+  orderBy   Int    @unique @map("order_by")
+
   candidateEducations CandidateEducation[]
 
   @@map("major_groups")

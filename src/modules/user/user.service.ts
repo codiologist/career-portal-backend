@@ -167,16 +167,17 @@ const createCandidateEducationService = async (
       const educationData = {
         userId,
         levelId: item.levelId,
-        degreeId: item.degreeId,
-        boardId: item.boardId,
-        subjectId: item.subjectId,
-        resultTypeId: item.resultTypeId,
-        majorGroupId: item.majorGroupId,
-        institution: item.institution,
+        degreeId: item.degreeId ?? null,
+        boardId: item.boardId ?? null,
+        subjectId: item.subjectId ?? null,
+        resultTypeId: item.resultTypeId ?? null,
+        majorGroupId: item.majorGroupId ?? null,
+        subjectName: item.subjectName ?? null,
+        instituteName: item.instituteName ?? null,
         passingYear: item.passingYear
           ? parseInt(String(item.passingYear))
           : null,
-        result: item.result,
+        totalMarksCGPA: item.totalMarksCGPA ?? null,
       };
 
       if (item.id) {
@@ -531,8 +532,8 @@ const me = async (user: TUserPayload) => {
         select: {
           id: true,
           passingYear: true,
-          institution: true,
-          result: true,
+          instituteName: true,
+          totalMarksCGPA: true,
           board: {
             select: {
               boardName: true,
@@ -722,8 +723,9 @@ const getEducationDropdown = async (payload: {
         select: {
           id: true,
           levelName: true,
+          orderBy: true,
         },
-        orderBy: { levelName: 'asc' },
+        orderBy: { orderBy: 'asc' },
       });
 
       return { type: 'level', data: levels };
@@ -738,7 +740,7 @@ const getEducationDropdown = async (payload: {
           degreeName: true,
           levelId: true,
         },
-        orderBy: { degreeName: 'asc' },
+        // orderBy: { orderBy: 'asc' },
       });
 
       return { type: 'degree', data: degrees };
@@ -752,8 +754,8 @@ const getEducationDropdown = async (payload: {
       });
 
       const majorGroups = await prisma.majorGroup.findMany({
-        select: { id: true, groupName: true },
-        orderBy: { groupName: 'asc' },
+        select: { id: true, groupName: true, orderBy: true },
+        orderBy: { orderBy: 'asc' },
       });
 
       const resultTypes = await prisma.resultType.findMany({
@@ -784,9 +786,9 @@ const getEducationDropdown = async (payload: {
         where: { userId: candidateId }, // ✅ corrected
         select: {
           id: true,
-          institution: true,
+          instituteName: true,
           passingYear: true,
-          result: true,
+          totalMarksCGPA: true,
           level: {
             select: { id: true, levelName: true },
           },
