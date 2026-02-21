@@ -1,4 +1,11 @@
 import { PrismaClient, AddressTypeEnum } from '@prisma/client';
+import {
+  SSC_DEGREE_OPTIONS,
+  HSC_DEGREE_OPTIONS,
+  DIPLOMA_DEGREE_OPTIONS,
+  BACHELOR_DEGREE_OPTIONS,
+  POSTGRADUATE_DEGREE_OPTIONS,
+} from '../src/utils/constant/degreeConstant';
 const prisma = new PrismaClient();
 
 async function main() {
@@ -94,30 +101,28 @@ async function main() {
   const educationHierarchy = [
     {
       level: 'Secondary',
-      degrees: ['SSC', 'O-Level', 'Dakhil (Madrasah)', 'SSC (Vocational)'],
+      degrees: SSC_DEGREE_OPTIONS,
     },
     {
       level: 'Higher Secondary',
-      degrees: [
-        'HSC',
-        'A-Level',
-        'Alim (Madrasah)',
-        'HSC (Vocational)',
-        'HSC (BMT)',
-      ],
+      degrees: HSC_DEGREE_OPTIONS,
     },
-    // {
-    //   level: 'Bachelor/Honors',
-    //   degrees: ['B.Sc', 'BSS', 'BBA', 'BA', 'B.Com', 'MBBS'],
-    // },
-    // {
-    //   level: 'Masters',
-    //   degrees: ['M.Sc', 'MSS', 'MBA', 'MA', 'M.Com'],
-    // },
-    // {
-    //   level: 'Doctoral',
-    //   degrees: ['PhD', 'DBA'],
-    // },
+    {
+      level: 'Diploma',
+      degrees: DIPLOMA_DEGREE_OPTIONS,
+    },
+    {
+      level: 'Bachelor/Honors',
+      degrees: BACHELOR_DEGREE_OPTIONS,
+    },
+    {
+      level: 'Postgraduate',
+      degrees: POSTGRADUATE_DEGREE_OPTIONS,
+    },
+    {
+      level: 'PhD',
+      degrees: [],
+    },
   ];
 
   for (const [index, item] of educationHierarchy.entries()) {
