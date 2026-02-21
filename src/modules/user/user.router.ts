@@ -6,10 +6,9 @@ import { UserController } from './user.controller';
 import { validationSchema } from '../../middlewares/validationSchema';
 import {
   //   achievementSchema,
-  multipleAchievementSchema,
   UserProfileValidation,
 } from './user.validation';
-import { upload, uploadArray } from '../../utils/uploadFileSystem';
+import { upload } from '../../utils/uploadFileSystem';
 
 // import { validationSchema } from '../../middlewares/validationSchema';
 // import { profileSchema } from './user.validation';

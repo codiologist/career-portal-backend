@@ -199,7 +199,7 @@ const createCandidateEducationService = async (
         await tx.document.create({
           data: {
             userId,
-            type: "CERTIFICATE",
+            type: 'CERTIFICATE',
             folderName: file.fieldname,
             path: file.path,
             size: file.size,
@@ -337,6 +337,7 @@ const createCandidateAchievement = async (
         achievement = await tx.candidateAchievement.update({
           where: { id: item.id },
           data: {
+            achievementType: item.achievementType,
             title: item.title,
             description: item.description,
             organizationName: item.organizationName,
@@ -350,6 +351,7 @@ const createCandidateAchievement = async (
         achievement = await tx.candidateAchievement.create({
           data: {
             userId,
+            achievementType: item.achievementType,
             title: item.title,
             description: item.description,
             organizationName: item.organizationName,
@@ -374,7 +376,7 @@ const createCandidateAchievement = async (
         await tx.document.create({
           data: {
             userId,
-            type: "ACHIEVEMENT",
+            type: 'ACHIEVEMENT',
             name: item.title,
             folderName: file.fieldname,
             path: file.path,
@@ -463,9 +465,9 @@ const me = async (user: TUserPayload) => {
       documents: {
         where: {
           type: {
-            notIn: ["CERTIFICATE", "ACHIEVEMENT"]
+            notIn: ['CERTIFICATE', 'ACHIEVEMENT'],
           },
-          isDeleted: false
+          isDeleted: false,
         },
         select: {
           id: true,
@@ -476,8 +478,8 @@ const me = async (user: TUserPayload) => {
           remarks: true,
           documentNo: true,
           isDeleted: true,
-          issueAuthority: true
-        }
+          issueAuthority: true,
+        },
       },
       candidateExperiences: true,
       candidateReferences: {
@@ -558,11 +560,11 @@ const me = async (user: TUserPayload) => {
               remarks: true,
               documentNo: true,
               isDeleted: true,
-              issueAuthority: true
-            }
-          }
-        }
-      }
+              issueAuthority: true,
+            },
+          },
+        },
+      },
     },
   });
 
