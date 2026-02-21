@@ -312,7 +312,7 @@ const createCandidateAchievement = async (
   if (files && files.length > 0) {
     files.forEach((file) => {
       const tempId = file.fieldname.split('_')[1];
-
+      console.log(tempId);
       fileMap.set(tempId, file);
     });
   }
@@ -329,6 +329,7 @@ const createCandidateAchievement = async (
     const incomingIds = payload
       .filter((item) => item.id)
       .map((item) => item.id);
+
     // 🔥 2. Delete removed achievements
     const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
 
@@ -382,10 +383,9 @@ const createCandidateAchievement = async (
 
       finalAchievements.push(achievement);
 
-      console.log('file map', fileMap);
-
       // 🔥 4. Handle File
       const file = fileMap.get(item.tempId!);
+      console.log('file map', fileMap);
 
       if (file) {
         // Delete old document (replace file)
