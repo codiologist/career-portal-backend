@@ -227,10 +227,17 @@ export const candidateEducationSchema = z.object({
     .optional()
     .nullable(),
 
-  institution: z
+  subjectName: z
     .string()
-    .min(2, 'Institution name must be at least 2 characters')
-    .max(255, 'Institution name cannot exceed 255 characters')
+    .min(2, 'Subject name must be at least 2 characters')
+    .max(100, 'Subject name cannot exceed 100 characters')
+    .optional()
+    .nullable(),
+
+  instituteName: z
+    .string()
+    .min(2, 'Institute name must be at least 2 characters')
+    .max(255, 'Institute name cannot exceed 255 characters')
     .optional()
     .nullable(),
 
@@ -242,10 +249,10 @@ export const candidateEducationSchema = z.object({
     .optional()
     .nullable(),
 
-  result: z
+  totalMarksCGPA: z
     .string()
-    .min(1, 'Result cannot be empty')
-    .max(20, 'Result is too long')
+    .min(1, 'Total Marks/CGPA cannot be empty')
+    .max(20, 'Total Marks/CGPA is too long')
     .optional()
     .nullable(),
 });
