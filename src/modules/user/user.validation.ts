@@ -41,10 +41,9 @@ export const userProfileSPersonalchema = z.object({
 
 /////////// personal validation schema //////////////////////
 
-/////////// Exprience validation schema //////////////////////
+/////////// Expriencez alidation schema //////////////////////
 
-export const workExperienceSchema = z
-  .object({
+export const workExperienceSchema = z.object({
     companyName: z
       .string()
       .min(1, 'Company name is required')
@@ -70,9 +69,7 @@ export const workExperienceSchema = z
       .string()
       .datetime({ message: 'End date must be a valid ISO datetime' })
       .nullable()
-      .optional(),
-  })
-  .refine(
+  .optional(),}).refine(
     (data) => {
       // If not continuing, endDate must exist
       if (!data.isContinue) {
@@ -85,9 +82,9 @@ export const workExperienceSchema = z
       path: ['endDate'],
     },
   );
-
-/////////// Exprience validation schema //////////////////////
 const workExperienceArraySchema = z.array(workExperienceSchema);
+
+/////////// Expriencez alidation schema //////////////////////
 
 export const referenceSchema = z.object({
   name: z
@@ -120,15 +117,7 @@ export const referenceSchema = z.object({
 
 const ReferanceArraySchema = z.array(referenceSchema);
 
-/**
- * Address Type Enum
- */
-
 export const addressTypeEnum = z.enum(['PRESENT', 'PERMANENT']);
-
-/**
- * Single Address Schema
- */
 
 export const AddressSchema = z.object({
   divisionId: z.number().int('Division must be a valid number'),
@@ -157,9 +146,6 @@ export const AddressSchema = z.object({
     .min(5, 'Address type ID must be at least 5 characters'),
 });
 
-/**
- * Multiple Address Schema (optional)
- */
 export const multipleAddressSchema = z.array(AddressSchema).min(1);
 
 export const achievementTypeEnum = z.enum([
@@ -205,7 +191,6 @@ export const achievementSchema = z.object({
 
 export const multipleAchievementSchema = z.array(achievementSchema).min(1);
 
-
 export const candidateEducationSchema = z.object({
   id: z.string().uuid('Invalid Level ID format').optional(),
 
@@ -249,11 +234,9 @@ export const candidateEducationSchema = z.object({
     .max(20, 'Total Marks/CGPA is too long'),
 });
 
-
-
 export const candidateEducationArraySchema = z.array(candidateEducationSchema);
 
-//////// Export all validation field ////////
+
 
 export const UserProfileValidation = {
   userProfileSPersonalchema,
@@ -264,18 +247,17 @@ export const UserProfileValidation = {
   candidateEducationArraySchema,
 };
 
+
+
+
+
 // TypeScript type inferred from Zod
 export type TCanditateProfile = z.infer<typeof userProfileSPersonalchema>;
 export type TWorkExperiece = z.infer<typeof workExperienceArraySchema>;
 export type TAddress = z.infer<typeof AddressSchema>;
 export type TReferance = z.infer<typeof referenceSchema>;
-// Single Address Type
 export type TAddressInput = z.infer<typeof AddressSchema>;
-
-// Multiple Address Type
 export type TMultipleAddressInput = z.infer<typeof multipleAddressSchema>;
-
-// Address Type Enum
 export type TAddressType = z.infer<typeof addressTypeEnum>;
 export type TAchievementInput = z.infer<typeof achievementSchema>;
 export type TAchievementEnum = z.infer<typeof addressTypeEnum>;

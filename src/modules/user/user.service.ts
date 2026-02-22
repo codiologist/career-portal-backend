@@ -215,9 +215,6 @@ const createCandidateEducationService = async (
   return result;
 };
 
-
-
-
 const createCandidateReference = async (
   payload: TReferance[],
   user: TUserPayload,

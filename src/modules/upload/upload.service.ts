@@ -182,6 +182,8 @@ const uploadSDocument = async (file: TCustomFileMulter, user: TUserPayload, payl
 
 const deleteDocumentSingle = async (id: string) => {
 
+  console.log(id)
+
   const result = await prisma.document.update({
     where: { id },
     data: {
