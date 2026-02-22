@@ -207,15 +207,9 @@ export const candidateEducationSchema = z.object({
 
   subjectId: z.string().uuid('Invalid Subject ID format').optional(),
 
-  majorGroupId: z
-    .string()
-    .uuid('Invalid Major Group ID format')
-    .optional(),
+  majorGroupId: z.string().uuid('Invalid Major Group ID format').optional(),
 
-  subjectName: z
-    .string()
-    .min(2, 'Subject name must be at least 2 characters')
-    .max(100, 'Subject name cannot exceed 100 characters'),
+  subjectName: z.string().optional().nullable(),
 
   instituteName: z
     .string()

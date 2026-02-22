@@ -156,10 +156,10 @@ model CandidateEducation {
   majorGroupId String?     @map("major_group_id")
   majorGroup   MajorGroup? @relation(fields: [majorGroupId], references: [id])
 
-  subjectName    String @map("subject_name")
-  instituteName  String @map("institute_name")
-  passingYear    Int    @map("passing_year")
-  totalMarksCGPA String @map("total_marks_cgpa")
+  subjectName    String? @map("subject_name")
+  instituteName  String  @map("institute_name")
+  passingYear    Int     @map("passing_year")
+  totalMarksCGPA String  @map("total_marks_cgpa")
 
   documents Document[]
 
@@ -168,8 +168,6 @@ model CandidateEducation {
 
   @@map("candidate_educations")
 }
-
-
 
 model LevelOfEducation {
   id        String @id @default(uuid())
@@ -305,13 +303,11 @@ enum achievementTypeEnum {
   WORKSHOP
 }
 
-
-
 model CandidateAchievement {
-  id               String  @id @default(uuid())
-  achievementType  achievementTypeEnum?  @map("achievement_type")
+  id               String               @id @default(uuid())
+  achievementType  achievementTypeEnum? @map("achievement_type")
   title            String
-  organizationName String  @map("organization_name")
+  organizationName String               @map("organization_name")
   url              String?
   location         String
   year             Int

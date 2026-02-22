@@ -118,7 +118,6 @@ const createCandidateEducationService = async (
   }
 
   const result = await prisma.$transaction(async (tx) => {
-
     // 1️⃣ Get existing educations
     const existingEducations = await tx.candidateEducation.findMany({
       where: { userId },
@@ -132,9 +131,7 @@ const createCandidateEducationService = async (
       .map((item) => item.id);
 
     // 2️⃣ Delete removed educations
-    const idsToDelete = existingIds.filter(
-      (id) => !incomingIds.includes(id)
-    );
+    const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
 
     if (idsToDelete.length > 0) {
       await tx.document.deleteMany({
@@ -160,15 +157,15 @@ const createCandidateEducationService = async (
       const educationData = {
         userId,
         levelId: item.levelId,
-        degreeId: item.degreeId ,
-        boardId: item.boardId ,
-        subjectId: item.subjectId ,
-        resultTypeId: item.resultTypeId ,
-        majorGroupId: item.majorGroupId ,
-        subjectName: item.subjectName ,
-        instituteName: item.instituteName ,
+        degreeId: item.degreeId,
+        boardId: item.boardId,
+        subjectId: item.subjectId,
+        resultTypeId: item.resultTypeId,
+        majorGroupId: item.majorGroupId,
+        subjectName: item.subjectName ?? null,
+        instituteName: item.instituteName,
         passingYear: item.passingYear,
-        totalMarksCGPA: item.totalMarksCGPA ,
+        totalMarksCGPA: item.totalMarksCGPA,
       };
 
       let education;
@@ -199,6 +196,7 @@ const createCandidateEducationService = async (
           data: {
             userId,
             type: 'CERTIFICATE',
+            name: file.originalname,
             folderName: file.fieldname,
             path: file.path,
             size: file.size,
@@ -375,7 +373,7 @@ const createCandidateAchievement = async (
         await tx.document.create({
           data: {
             userId,
-            type: "ACHIEVEMENT",
+            type: 'ACHIEVEMENT',
             name: item.title,
             folderName: file.fieldname,
             path: file.path,
@@ -392,7 +390,6 @@ const createCandidateAchievement = async (
 
   return result;
 };
-
 
 const me = async (user: TUserPayload) => {
   const result = await prisma.user.findUnique({
@@ -469,6 +466,7 @@ const me = async (user: TUserPayload) => {
           id: true,
           type: true,
           name: true,
+          issueDate: true,
           folderName: true,
           path: true,
           remarks: true,
@@ -509,31 +507,37 @@ const me = async (user: TUserPayload) => {
         select: {
           id: true,
           passingYear: true,
+          subjectName: true,
           instituteName: true,
           totalMarksCGPA: true,
           board: {
             select: {
+              id: true,
               boardName: true,
             },
           },
 
           degree: {
             select: {
+              id: true,
               degreeName: true,
             },
           },
           level: {
             select: {
+              id: true,
               levelName: true,
             },
           },
           majorGroup: {
             select: {
+              id: true,
               groupName: true,
             },
           },
           resultType: {
             select: {
+              id: true,
               resultType: true,
             },
           },
