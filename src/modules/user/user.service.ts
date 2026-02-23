@@ -226,7 +226,6 @@ const createCandidateEducationService = async (
   return await prisma.$transaction(async (tx) => {
     const result = [];
 
-
     for (let i = 0; i < payload.length; i++) {
       const item = payload[i];
 
@@ -321,7 +320,6 @@ const createCandidateEducationService = async (
     return result;
   });
 };
-
 
 const createCandidateReference = async (
   payload: TReferance[],
@@ -501,6 +499,112 @@ const createCandidateAddress = async (
 //   return result;
 // };
 
+// const createCandidateAchievement = async (
+//   payload: TAchievementInput[],
+//   files: Express.Multer.File[],
+//   user: TUserPayload,
+// ) => {
+//   const userId = user.id;
+
+//   if (!payload || payload.length === 0) {
+//     throw new AppError(400, 'Achievement payload is required');
+//   }
+
+//   return await prisma.$transaction(async (tx) => {
+//     const result = [];
+
+//     for (let i = 0; i < payload.length; i++) {
+//       const item = payload[i];
+//   console.log(item)
+//       // 🔥 If ID not provided → check existing by unique fields
+//       const achievementId = item.achievementId;
+
+//       // if (!achievementId) {
+//       //   const existing = await tx.candidateAchievement.findFirst({
+//       //     where: {userId},
+//       //   });
+
+//       //   if (existing) {
+//       //     achievementId = existing.id;
+//       //   }
+//       // }
+
+//       console.log(achievementId)
+
+//       const achievement = await tx.candidateAchievement.upsert({
+//         where: {
+//           id: achievementId || '00000000-0000-0000-0000-000000000000', // fake id if not found
+//         },
+//         update: {
+//           achievementType: item.achievementType,
+//           title: item.title,
+//           organizationName: item.organizationName,
+//           url: item.url,
+//           location: item.location,
+//           year: item.year,
+//           description: item.description,
+//         },
+//         create: {
+//           achievementType: item.achievementType,
+//           title: item.title,
+//           organizationName: item.organizationName,
+//           url: item.url,
+//           location: item.location,
+//           year: item.year,
+//           description: item.description,
+//           userId,
+//         },
+//       });
+
+//       // =========================
+//       // FILE SECTION (NO DUPLICATE)
+//       // =========================
+
+//       const file = files?.[i];
+
+//       if (file) {
+//         const existingDoc = await tx.document.findFirst({
+//           where: {
+//             candidateAchievementId: achievement.id,
+//             userId,
+//             isDeleted: false,
+//           },
+//         });
+
+//         if (existingDoc) {
+//           await tx.document.update({
+//             where: { id: existingDoc.id },
+//             data: {
+//               path: file.path,
+//               size: file.size,
+//               mimeType: file.mimetype,
+//               name: file.originalname,
+//               folderName: file.destination,
+//             },
+//           });
+//         } else {
+//           await tx.document.create({
+//             data: {
+//               type: 'ACHIEVEMENT',
+//               name: file.originalname,
+//               folderName: file.destination,
+//               path: file.path,
+//               size: file.size,
+//               mimeType: file.mimetype,
+//               userId,
+//               candidateAchievementId: achievement.id,
+//             },
+//           });
+//         }
+//       }
+
+//       result.push(achievement);
+//     }
+
+//     return result;
+//   });
+// };
+
 const createCandidateAchievement = async (
   payload: TAchievementInput[],
   files: Express.Multer.File[],
@@ -515,30 +619,45 @@ const createCandidateAchievement = async (
   return await prisma.$transaction(async (tx) => {
     const result = [];
 
+    const incomingIds = payload
+      .map((item) => item.achievementId)
+      .filter(Boolean) as string[];
+
+    // ✅ আগে achievement গুলো খুঁজে বের করো যেগুলো delete হবে
+    const achievementsToDelete = await tx.candidateAchievement.findMany({
+      where: {
+        userId,
+        ...(incomingIds.length > 0 ? { id: { notIn: incomingIds } } : {}),
+      },
+      select: { id: true },
+    });
+
+    const achievementIdsToDelete = achievementsToDelete.map((a) => a.id);
+
+    if (achievementIdsToDelete.length > 0) {
+      // ✅ সেই achievement-গুলোর document আগে delete করো
+      await tx.document.deleteMany({
+        where: {
+          userId,
+          candidateAchievementId: { in: achievementIdsToDelete },
+        },
+      });
+
+      // ✅ তারপর achievement delete করো
+      await tx.candidateAchievement.deleteMany({
+        where: {
+          id: { in: achievementIdsToDelete },
+        },
+      });
+    }
 
     for (let i = 0; i < payload.length; i++) {
       const item = payload[i];
-  console.log(item)
-      // 🔥 If ID not provided → check existing by unique fields
       const achievementId = item.achievementId;
-
-    
-
-      // if (!achievementId) {
-      //   const existing = await tx.candidateAchievement.findFirst({
-      //     where: {userId},
-      //   });
-
-      //   if (existing) {
-      //     achievementId = existing.id;
-      //   }
-      // }
-
-      console.log(achievementId)
 
       const achievement = await tx.candidateAchievement.upsert({
         where: {
-          id: achievementId || '00000000-0000-0000-0000-000000000000', // fake id if not found
+          id: achievementId || '00000000-0000-0000-0000-000000000000',
         },
         update: {
           achievementType: item.achievementType,
@@ -561,13 +680,10 @@ const createCandidateAchievement = async (
         },
       });
 
-      // =========================
-      // FILE SECTION (NO DUPLICATE)
-      // =========================
-
       const file = files?.[i];
 
-      if (file) {
+      // ✅ empty blob (size === 0) ignore করো
+      if (file && file.size > 0) {
         const existingDoc = await tx.document.findFirst({
           where: {
             candidateAchievementId: achievement.id,
@@ -609,9 +725,6 @@ const createCandidateAchievement = async (
     return result;
   });
 };
-
-
-
 
 const me = async (user: TUserPayload) => {
   const result = await prisma.user.findUnique({
