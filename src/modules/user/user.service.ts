@@ -212,6 +212,7 @@ const createCandidateExperienceService = async (
 
 //   return result;
 // };
+
 const createCandidateEducationService = async (
   payload: TMultipleEducationInput[],
   files: Express.Multer.File[],
@@ -226,62 +227,81 @@ const createCandidateEducationService = async (
   return await prisma.$transaction(async (tx) => {
     const result = [];
 
+    // ✅ Payload-এ যেসব ID আছে সেগুলো collect করো
+    const incomingIds = payload
+      .map((item) => item.id)
+      .filter(Boolean) as string[];
+
+    // ✅ আগে education গুলো খুঁজে বের করো যেগুলো delete হবে
+    const educationsToDelete = await tx.candidateEducation.findMany({
+      where: {
+        userId,
+        ...(incomingIds.length > 0 ? { id: { notIn: incomingIds } } : {}),
+      },
+      select: { id: true },
+    });
+
+    const educationIdsToDelete = educationsToDelete.map((e) => e.id);
+
+    if (educationIdsToDelete.length > 0) {
+      // ✅ Document আগে delete (foreign key constraint)
+      await tx.document.deleteMany({
+        where: {
+          candidateEducationId: { in: educationIdsToDelete },
+        },
+      });
+
+      // ✅ তারপর Education delete
+      await tx.candidateEducation.deleteMany({
+        where: {
+          id: { in: educationIdsToDelete },
+        },
+      });
+    }
+
     for (let i = 0; i < payload.length; i++) {
       const item = payload[i];
+      const educationId = item.id;
 
-      // 🔥 If ID not provided → check existing by unique fields
-      let educationId = item.id;
-
-      if (!educationId) {
-        const existing = await tx.candidateEducation.findFirst({
-          where: {
-            userId,
-            title: item.title,
-            organizationName: item.organizationName,
-            year: item.year,
-          },
-        });
-
-        if (existing) {
-          achievementId = existing.id;
-        }
-      }
-
-      const achievement = await tx.candidateAchievement.upsert({
+      // ✅ Schema অনুযায়ী সঠিক field names
+      const education = await tx.candidateEducation.upsert({
         where: {
-          id: achievementId || '00000000-0000-0000-0000-000000000000', // fake id if not found
+          id: educationId || '00000000-0000-0000-0000-000000000000',
         },
         update: {
-          achievementType: item.achievementType,
-          title: item.title,
-          organizationName: item.organizationName,
-          url: item.url,
-          location: item.location,
-          year: item.year,
-          description: item.description,
+          levelId: item.levelId,
+          degreeId: item.degreeId ?? null,
+          boardId: item.boardId ?? null,
+          subjectId: item.subjectId ?? null,
+          resultTypeId: item.resultTypeId ?? null,
+          majorGroupId: item.majorGroupId ?? null,
+          subjectName: item.subjectName ?? null,
+          instituteName: item.instituteName,
+          passingYear: item.passingYear,
+          totalMarksCGPA: item.totalMarksCGPA,
         },
         create: {
-          achievementType: item.achievementType,
-          title: item.title,
-          organizationName: item.organizationName,
-          url: item.url,
-          location: item.location,
-          year: item.year,
-          description: item.description,
+          levelId: item.levelId,
+          degreeId: item.degreeId ?? null,
+          boardId: item.boardId ?? null,
+          subjectId: item.subjectId ?? null,
+          resultTypeId: item.resultTypeId ?? null,
+          majorGroupId: item.majorGroupId ?? null,
+          subjectName: item.subjectName ?? null,
+          instituteName: item.instituteName,
+          passingYear: item.passingYear,
+          totalMarksCGPA: item.totalMarksCGPA,
           userId,
         },
       });
 
-      // =========================
-      // FILE SECTION (NO DUPLICATE)
-      // =========================
-
       const file = files?.[i];
 
-      if (file) {
+      // ✅ empty blob (size === 0) ignore করো
+      if (file && file.size > 0) {
         const existingDoc = await tx.document.findFirst({
           where: {
-            candidateAchievementId: achievement.id,
+            candidateEducationId: education.id,
             userId,
             isDeleted: false,
           },
@@ -301,20 +321,20 @@ const createCandidateEducationService = async (
         } else {
           await tx.document.create({
             data: {
-              type: 'ACHIEVEMENT',
+              type: 'EDUCATION',
               name: file.originalname,
               folderName: file.destination,
               path: file.path,
               size: file.size,
               mimeType: file.mimetype,
               userId,
-              candidateAchievementId: achievement.id,
+              candidateEducationId: education.id,
             },
           });
         }
       }
 
-      result.push(achievement);
+      result.push(education);
     }
 
     return result;
