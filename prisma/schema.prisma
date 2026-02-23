@@ -351,7 +351,7 @@ model Document {
   candidateEducationId String?             @map("candidate_education_id")
   candidateEducation   CandidateEducation? @relation(fields: [candidateEducationId], references: [id], onDelete: Cascade)
 
-  candidateAchievementId String?               @map("candidate_achievement_id")
+  candidateAchievementId String?         @map("candidate_achievement_id")
   candidateAchievement   CandidateAchievement? @relation(fields: [candidateAchievementId], references: [id], onDelete: Cascade)
 
   @@index([userId])

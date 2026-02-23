@@ -85,21 +85,13 @@ const createCandidateAddress = catchAsync(async (req, res) => {
 });
 
 const createCandidateAchievement = catchAsync(async (req, res) => {
-
   const files = req.files as Express.Multer.File[];
-
-
   const data = JSON.parse(req.body.data)
-  console.log(data)
-
   const validation = UserProfileValidation.multipleAchievementSchema.parse(data)
-
-
   const result = await UserService.createCandidateAchievement(
     validation,
     files,
     req.user as TUserPayload,
-
   );
   res.status(201).json({
     status: true,

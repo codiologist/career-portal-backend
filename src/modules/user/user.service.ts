@@ -281,6 +281,116 @@ const createCandidateAddress = async (
   return result;
 };
 
+// const createCandidateAchievement = async (
+//   payload: TAchievementInput[],
+//   files: Express.Multer.File[],
+//   user: TUserPayload,
+// ) => {
+//   const userId = user.id;
+
+//   if (!payload || payload.length === 0) {
+//     throw new AppError(400, 'Achievement payload is required');
+//   }
+
+//   const result = await prisma.$transaction(async (tx) => {
+//     // 1️⃣ Get existing achievements
+//     const existingAchievements = await tx.candidateAchievement.findMany({
+//       where: { userId },
+//       select: { id: true },
+//     });
+
+//     const existingIds = existingAchievements.map((item) => item.id);
+
+//     const incomingIds = payload
+//       .filter((item) => item.id)
+//       .map((item) => item.id);
+
+//     // 2️⃣ Delete removed achievements
+//     const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
+
+//     if (idsToDelete.length > 0) {
+//       await tx.document.deleteMany({
+//         where: {
+//           candidateAchievementId: { in: idsToDelete },
+//         },
+//       });
+
+//       await tx.candidateAchievement.deleteMany({
+//         where: { id: { in: idsToDelete } },
+//       });
+//     }
+
+//     const finalAchievements = [];
+
+//     // 3️⃣ Create or Update
+//     for (let index = 0; index < payload.length; index++) {
+//       const item = payload[index];
+//       const file = files?.[index]; // 🔥 index-based mapping
+
+//       let achievement;
+
+//       if (item.id) {
+//         // ✅ Update
+//         achievement = await tx.candidateAchievement.update({
+//           where: { id: item.id },
+//           data: {
+//             achievementType: item.achievementType,
+//             title: item.title,
+//             description: item.description,
+//             organizationName: item.organizationName,
+//             url: item.url,
+//             location: item.location,
+//             year: item.year,
+//           },
+//         });
+//       } else {
+//         // ✅ Create
+//         achievement = await tx.candidateAchievement.create({
+//           data: {
+//             userId,
+//             achievementType: item.achievementType,
+//             title: item.title,
+//             description: item.description,
+//             organizationName: item.organizationName,
+//             url: item.url,
+//             location: item.location,
+//             year: item.year,
+//           },
+//         });
+//       }
+
+//       finalAchievements.push(achievement);
+
+//       // 4️⃣ Handle File (Safe)
+//       if (file) {
+//         // Delete old file (replace)
+//         await tx.document.deleteMany({
+//           where: {
+//             candidateAchievementId: achievement.id,
+//           },
+//         });
+
+//         await tx.document.create({
+//           data: {
+//             userId,
+//             type: 'ACHIEVEMENT',
+//             name: item.title,
+//             folderName: file.fieldname,
+//             path: file.path,
+//             size: file.size,
+//             mimeType: file.mimetype,
+//             candidateAchievementId: achievement.id,
+//           },
+//         });
+//       }
+//     }
+
+//     return finalAchievements;
+//   });
+
+//   return result;
+// };
+
 const createCandidateAchievement = async (
   payload: TAchievementInput[],
   files: Express.Multer.File[],
@@ -292,104 +402,106 @@ const createCandidateAchievement = async (
     throw new AppError(400, 'Achievement payload is required');
   }
 
-  const result = await prisma.$transaction(async (tx) => {
-    // 1️⃣ Get existing achievements
-    const existingAchievements = await tx.candidateAchievement.findMany({
-      where: { userId },
-      select: { id: true },
-    });
+  return await prisma.$transaction(async (tx) => {
+    const result = [];
 
-    const existingIds = existingAchievements.map((item) => item.id);
+    for (let i = 0; i < payload.length; i++) {
+      const item = payload[i];
 
-    const incomingIds = payload
-      .filter((item) => item.id)
-      .map((item) => item.id);
+      // 🔥 If ID not provided → check existing by unique fields
+      let achievementId = item.id;
 
-    // 2️⃣ Delete removed achievements
-    const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
+      if (!achievementId) {
+        const existing = await tx.candidateAchievement.findFirst({
+          where: {
+            userId,
+            title: item.title,
+            organizationName: item.organizationName,
+            year: item.year,
+          },
+        });
 
-    if (idsToDelete.length > 0) {
-      await tx.document.deleteMany({
+        if (existing) {
+          achievementId = existing.id;
+        }
+      }
+
+      const achievement = await tx.candidateAchievement.upsert({
         where: {
-          candidateAchievementId: { in: idsToDelete },
+          id: achievementId || '00000000-0000-0000-0000-000000000000', // fake id if not found
+        },
+        update: {
+          achievementType: item.achievementType,
+          title: item.title,
+          organizationName: item.organizationName,
+          url: item.url,
+          location: item.location,
+          year: item.year,
+          description: item.description,
+        },
+        create: {
+          achievementType: item.achievementType,
+          title: item.title,
+          organizationName: item.organizationName,
+          url: item.url,
+          location: item.location,
+          year: item.year,
+          description: item.description,
+          userId,
         },
       });
 
-      await tx.candidateAchievement.deleteMany({
-        where: { id: { in: idsToDelete } },
-      });
-    }
+      // =========================
+      // FILE SECTION (NO DUPLICATE)
+      // =========================
 
-    const finalAchievements = [];
+      const file = files?.[i];
 
-    // 3️⃣ Create or Update
-    for (let index = 0; index < payload.length; index++) {
-      const item = payload[index];
-      const file = files?.[index]; // 🔥 index-based mapping
-
-      let achievement;
-
-      if (item.id) {
-        // ✅ Update
-        achievement = await tx.candidateAchievement.update({
-          where: { id: item.id },
-          data: {
-            achievementType: item.achievementType,
-            title: item.title,
-            description: item.description,
-            organizationName: item.organizationName,
-            url: item.url,
-            location: item.location,
-            year: item.year,
-          },
-        });
-      } else {
-        // ✅ Create
-        achievement = await tx.candidateAchievement.create({
-          data: {
-            userId,
-            achievementType: item.achievementType,
-            title: item.title,
-            description: item.description,
-            organizationName: item.organizationName,
-            url: item.url,
-            location: item.location,
-            year: item.year,
-          },
-        });
-      }
-
-      finalAchievements.push(achievement);
-
-      // 4️⃣ Handle File (Safe)
       if (file) {
-        // Delete old file (replace)
-        await tx.document.deleteMany({
+        const existingDoc = await tx.document.findFirst({
           where: {
             candidateAchievementId: achievement.id,
+            userId,
+            isDeleted: false,
           },
         });
 
-        await tx.document.create({
-          data: {
-            userId,
-            type: 'ACHIEVEMENT',
-            name: item.title,
-            folderName: file.fieldname,
-            path: file.path,
-            size: file.size,
-            mimeType: file.mimetype,
-            candidateAchievementId: achievement.id,
-          },
-        });
+        if (existingDoc) {
+          await tx.document.update({
+            where: { id: existingDoc.id },
+            data: {
+              path: file.path,
+              size: file.size,
+              mimeType: file.mimetype,
+              name: file.originalname,
+              folderName: file.destination,
+            },
+          });
+        } else {
+          await tx.document.create({
+            data: {
+              type: 'ACHIEVEMENT',
+              name: file.originalname,
+              folderName: file.destination,
+              path: file.path,
+              size: file.size,
+              mimeType: file.mimetype,
+              userId,
+              candidateAchievementId: achievement.id,
+            },
+          });
+        }
       }
+
+      result.push(achievement);
     }
 
-    return finalAchievements;
+    return result;
   });
-
-  return result;
 };
+
+
+
 
 const me = async (user: TUserPayload) => {
   const result = await prisma.user.findUnique({
