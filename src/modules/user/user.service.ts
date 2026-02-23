@@ -106,6 +106,112 @@ const createCandidateExperienceService = async (
   return result;
 };
 
+// const createCandidateEducationService = async (
+//   payload: TMultipleEducationInput[],
+//   files: Express.Multer.File[],
+//   user: TUserPayload,
+// ) => {
+//   const userId = user.id;
+
+//   if (!payload || payload.length === 0) {
+//     throw new AppError(400, 'Education payload is required');
+//   }
+
+//   const result = await prisma.$transaction(async (tx) => {
+//     // 1️⃣ Get existing educations
+//     const existingEducations = await tx.candidateEducation.findMany({
+//       where: { userId },
+//       select: { id: true },
+//     });
+
+//     const existingIds = existingEducations.map((item) => item.id);
+
+//     const incomingIds = payload
+//       .filter((item) => item.id)
+//       .map((item) => item.id);
+
+//     // 2️⃣ Delete removed educations
+//     const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
+
+//     if (idsToDelete.length > 0) {
+//       await tx.document.deleteMany({
+//         where: {
+//           candidateEducationId: { in: idsToDelete },
+//         },
+//       });
+
+//       await tx.candidateEducation.deleteMany({
+//         where: {
+//           id: { in: idsToDelete },
+//         },
+//       });
+//     }
+
+//     const finalEducations = [];
+
+//     // 3️⃣ Create or Update
+//     for (let index = 0; index < payload.length; index++) {
+//       const item = payload[index];
+//       const file = files?.[index]; // 🔥 SAFE FIX
+
+//       const educationData = {
+//         userId,
+//         levelId: item.levelId,
+//         degreeId: item.degreeId,
+//         boardId: item.boardId,
+//         subjectId: item.subjectId,
+//         resultTypeId: item.resultTypeId,
+//         majorGroupId: item.majorGroupId,
+//         subjectName: item.subjectName ?? null,
+//         instituteName: item.instituteName,
+//         passingYear: item.passingYear,
+//         totalMarksCGPA: item.totalMarksCGPA,
+//       };
+
+//       let education;
+
+//       if (item.id) {
+//         education = await tx.candidateEducation.update({
+//           where: { id: item.id },
+//           data: educationData,
+//         });
+//       } else {
+//         education = await tx.candidateEducation.create({
+//           data: educationData,
+//         });
+//       }
+
+//       finalEducations.push(education);
+
+//       // 4️⃣ Handle File
+//       if (file) {
+//         // delete old certificate
+//         await tx.document.deleteMany({
+//           where: {
+//             candidateEducationId: education.id,
+//           },
+//         });
+
+//         await tx.document.create({
+//           data: {
+//             userId,
+//             type: 'CERTIFICATE',
+//             name: file.originalname,
+//             folderName: file.fieldname,
+//             path: file.path,
+//             size: file.size,
+//             mimeType: file.mimetype,
+//             candidateEducationId: education.id,
+//           },
+//         });
+//       }
+//     }
+
+//     return finalEducations;
+//   });
+
+//   return result;
+// };
 const createCandidateEducationService = async (
   payload: TMultipleEducationInput[],
   files: Express.Multer.File[],
@@ -117,101 +223,105 @@ const createCandidateEducationService = async (
     throw new AppError(400, 'Education payload is required');
   }
 
-  const result = await prisma.$transaction(async (tx) => {
-    // 1️⃣ Get existing educations
-    const existingEducations = await tx.candidateEducation.findMany({
-      where: { userId },
-      select: { id: true },
-    });
+  return await prisma.$transaction(async (tx) => {
+    const result = [];
 
-    const existingIds = existingEducations.map((item) => item.id);
 
-    const incomingIds = payload
-      .filter((item) => item.id)
-      .map((item) => item.id);
+    for (let i = 0; i < payload.length; i++) {
+      const item = payload[i];
 
-    // 2️⃣ Delete removed educations
-    const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
+      // 🔥 If ID not provided → check existing by unique fields
+      let educationId = item.id;
 
-    if (idsToDelete.length > 0) {
-      await tx.document.deleteMany({
-        where: {
-          candidateEducationId: { in: idsToDelete },
-        },
-      });
-
-      await tx.candidateEducation.deleteMany({
-        where: {
-          id: { in: idsToDelete },
-        },
-      });
-    }
-
-    const finalEducations = [];
-
-    // 3️⃣ Create or Update
-    for (let index = 0; index < payload.length; index++) {
-      const item = payload[index];
-      const file = files?.[index]; // 🔥 SAFE FIX
-
-      const educationData = {
-        userId,
-        levelId: item.levelId,
-        degreeId: item.degreeId,
-        boardId: item.boardId,
-        subjectId: item.subjectId,
-        resultTypeId: item.resultTypeId,
-        majorGroupId: item.majorGroupId,
-        subjectName: item.subjectName ?? null,
-        instituteName: item.instituteName,
-        passingYear: item.passingYear,
-        totalMarksCGPA: item.totalMarksCGPA,
-      };
-
-      let education;
-
-      if (item.id) {
-        education = await tx.candidateEducation.update({
-          where: { id: item.id },
-          data: educationData,
-        });
-      } else {
-        education = await tx.candidateEducation.create({
-          data: educationData,
-        });
-      }
-
-      finalEducations.push(education);
-
-      // 4️⃣ Handle File
-      if (file) {
-        // delete old certificate
-        await tx.document.deleteMany({
+      if (!educationId) {
+        const existing = await tx.candidateEducation.findFirst({
           where: {
-            candidateEducationId: education.id,
+            userId,
+            title: item.title,
+            organizationName: item.organizationName,
+            year: item.year,
           },
         });
 
-        await tx.document.create({
-          data: {
+        if (existing) {
+          achievementId = existing.id;
+        }
+      }
+
+      const achievement = await tx.candidateAchievement.upsert({
+        where: {
+          id: achievementId || '00000000-0000-0000-0000-000000000000', // fake id if not found
+        },
+        update: {
+          achievementType: item.achievementType,
+          title: item.title,
+          organizationName: item.organizationName,
+          url: item.url,
+          location: item.location,
+          year: item.year,
+          description: item.description,
+        },
+        create: {
+          achievementType: item.achievementType,
+          title: item.title,
+          organizationName: item.organizationName,
+          url: item.url,
+          location: item.location,
+          year: item.year,
+          description: item.description,
+          userId,
+        },
+      });
+
+      // =========================
+      // FILE SECTION (NO DUPLICATE)
+      // =========================
+
+      const file = files?.[i];
+
+      if (file) {
+        const existingDoc = await tx.document.findFirst({
+          where: {
+            candidateAchievementId: achievement.id,
             userId,
-            type: 'CERTIFICATE',
-            name: file.originalname,
-            folderName: file.fieldname,
-            path: file.path,
-            size: file.size,
-            mimeType: file.mimetype,
-            candidateEducationId: education.id,
+            isDeleted: false,
           },
         });
+
+        if (existingDoc) {
+          await tx.document.update({
+            where: { id: existingDoc.id },
+            data: {
+              path: file.path,
+              size: file.size,
+              mimeType: file.mimetype,
+              name: file.originalname,
+              folderName: file.destination,
+            },
+          });
+        } else {
+          await tx.document.create({
+            data: {
+              type: 'ACHIEVEMENT',
+              name: file.originalname,
+              folderName: file.destination,
+              path: file.path,
+              size: file.size,
+              mimeType: file.mimetype,
+              userId,
+              candidateAchievementId: achievement.id,
+            },
+          });
+        }
       }
+
+      result.push(achievement);
     }
 
-    return finalEducations;
+    return result;
   });
-
-  return result;
 };
+
 
 const createCandidateReference = async (
   payload: TReferance[],
@@ -405,26 +515,26 @@ const createCandidateAchievement = async (
   return await prisma.$transaction(async (tx) => {
     const result = [];
 
+
     for (let i = 0; i < payload.length; i++) {
       const item = payload[i];
-
+  console.log(item)
       // 🔥 If ID not provided → check existing by unique fields
-      let achievementId = item.id;
+      const achievementId = item.achievementId;
 
-      if (!achievementId) {
-        const existing = await tx.candidateAchievement.findFirst({
-          where: {
-            userId,
-            title: item.title,
-            organizationName: item.organizationName,
-            year: item.year,
-          },
-        });
+    
 
-        if (existing) {
-          achievementId = existing.id;
-        }
-      }
+      // if (!achievementId) {
+      //   const existing = await tx.candidateAchievement.findFirst({
+      //     where: {userId},
+      //   });
+
+      //   if (existing) {
+      //     achievementId = existing.id;
+      //   }
+      // }
+
+      console.log(achievementId)
 
       const achievement = await tx.candidateAchievement.upsert({
         where: {

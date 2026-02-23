@@ -187,6 +187,7 @@ export const achievementSchema = z.object({
     .string()
     .min(10, 'Description must be at least 10 characters')
     .max(2000),
+  achievementId: z.string().optional(),
 });
 
 export const multipleAchievementSchema = z.array(achievementSchema).min(1);
