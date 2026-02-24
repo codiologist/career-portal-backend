@@ -106,112 +106,6 @@ const createCandidateExperienceService = async (
   return result;
 };
 
-// const createCandidateEducationService = async (
-//   payload: TMultipleEducationInput[],
-//   files: Express.Multer.File[],
-//   user: TUserPayload,
-// ) => {
-//   const userId = user.id;
-
-//   if (!payload || payload.length === 0) {
-//     throw new AppError(400, 'Education payload is required');
-//   }
-
-//   const result = await prisma.$transaction(async (tx) => {
-//     // 1️⃣ Get existing educations
-//     const existingEducations = await tx.candidateEducation.findMany({
-//       where: { userId },
-//       select: { id: true },
-//     });
-
-//     const existingIds = existingEducations.map((item) => item.id);
-
-//     const incomingIds = payload
-//       .filter((item) => item.id)
-//       .map((item) => item.id);
-
-//     // 2️⃣ Delete removed educations
-//     const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
-
-//     if (idsToDelete.length > 0) {
-//       await tx.document.deleteMany({
-//         where: {
-//           candidateEducationId: { in: idsToDelete },
-//         },
-//       });
-
-//       await tx.candidateEducation.deleteMany({
-//         where: {
-//           id: { in: idsToDelete },
-//         },
-//       });
-//     }
-
-//     const finalEducations = [];
-
-//     // 3️⃣ Create or Update
-//     for (let index = 0; index < payload.length; index++) {
-//       const item = payload[index];
-//       const file = files?.[index]; // 🔥 SAFE FIX
-
-//       const educationData = {
-//         userId,
-//         levelId: item.levelId,
-//         degreeId: item.degreeId,
-//         boardId: item.boardId,
-//         subjectId: item.subjectId,
-//         resultTypeId: item.resultTypeId,
-//         majorGroupId: item.majorGroupId,
-//         subjectName: item.subjectName ?? null,
-//         instituteName: item.instituteName,
-//         passingYear: item.passingYear,
-//         totalMarksCGPA: item.totalMarksCGPA,
-//       };
-
-//       let education;
-
-//       if (item.id) {
-//         education = await tx.candidateEducation.update({
-//           where: { id: item.id },
-//           data: educationData,
-//         });
-//       } else {
-//         education = await tx.candidateEducation.create({
-//           data: educationData,
-//         });
-//       }
-
-//       finalEducations.push(education);
-
-//       // 4️⃣ Handle File
-//       if (file) {
-//         // delete old certificate
-//         await tx.document.deleteMany({
-//           where: {
-//             candidateEducationId: education.id,
-//           },
-//         });
-
-//         await tx.document.create({
-//           data: {
-//             userId,
-//             type: 'CERTIFICATE',
-//             name: file.originalname,
-//             folderName: file.fieldname,
-//             path: file.path,
-//             size: file.size,
-//             mimeType: file.mimetype,
-//             candidateEducationId: education.id,
-//           },
-//         });
-//       }
-//     }
-
-//     return finalEducations;
-//   });
-
-//   return result;
-// };
 const createCandidateEducationService = async (
   payload: TMultipleEducationInput[],
   files: Express.Multer.File[],
@@ -223,103 +117,100 @@ const createCandidateEducationService = async (
     throw new AppError(400, 'Education payload is required');
   }
 
-  return await prisma.$transaction(async (tx) => {
-    const result = [];
+  const result = await prisma.$transaction(async (tx) => {
+    // 1️⃣ Get existing educations
+    const existingEducations = await tx.candidateEducation.findMany({
+      where: { userId },
+      select: { id: true },
+    });
 
+    const existingIds = existingEducations.map((item) => item.id);
 
-    for (let i = 0; i < payload.length; i++) {
-      const item = payload[i];
+    const incomingIds = payload
+      .filter((item) => item.id)
+      .map((item) => item.id);
 
-      // 🔥 If ID not provided → check existing by unique fields
-      let educationId = item.id;
+    // 2️⃣ Delete removed educations
+    const idsToDelete = existingIds.filter((id) => !incomingIds.includes(id));
 
-      if (!educationId) {
-        const existing = await tx.candidateEducation.findFirst({
-          where: {
-            userId,
-            title: item.title,
-            organizationName: item.organizationName,
-            year: item.year,
-          },
-        });
-
-        if (existing) {
-          achievementId = existing.id;
-        }
-      }
-
-      const achievement = await tx.candidateAchievement.upsert({
+    if (idsToDelete.length > 0) {
+      await tx.document.deleteMany({
         where: {
-          id: achievementId || '00000000-0000-0000-0000-000000000000', // fake id if not found
-        },
-        update: {
-          achievementType: item.achievementType,
-          title: item.title,
-          organizationName: item.organizationName,
-          url: item.url,
-          location: item.location,
-          year: item.year,
-          description: item.description,
-        },
-        create: {
-          achievementType: item.achievementType,
-          title: item.title,
-          organizationName: item.organizationName,
-          url: item.url,
-          location: item.location,
-          year: item.year,
-          description: item.description,
-          userId,
+          candidateEducationId: { in: idsToDelete },
         },
       });
 
-      // =========================
-      // FILE SECTION (NO DUPLICATE)
-      // =========================
+      await tx.candidateEducation.deleteMany({
+        where: {
+          id: { in: idsToDelete },
+        },
+      });
+    }
 
-      const file = files?.[i];
+    const finalEducations = [];
 
+    // 3️⃣ Create or Update
+    for (let index = 0; index < payload.length; index++) {
+      const item = payload[index];
+      const file = files?.[index]; // 🔥 SAFE FIX
+
+      const educationData = {
+        userId,
+        levelId: item.levelId,
+        degreeId: item.degreeId,
+        boardId: item.boardId,
+        subjectId: item.subjectId,
+        resultTypeId: item.resultTypeId,
+        majorGroupId: item.majorGroupId,
+        subjectName: item.subjectName ?? null,
+        instituteName: item.instituteName,
+        passingYear: item.passingYear,
+        totalMarksCGPA: item.totalMarksCGPA,
+      };
+
+      let education;
+
+      if (item.id) {
+        education = await tx.candidateEducation.update({
+          where: { id: item.id },
+          data: educationData,
+        });
+      } else {
+        education = await tx.candidateEducation.create({
+          data: educationData,
+        });
+      }
+
+      finalEducations.push(education);
+
+      // 4️⃣ Handle File
       if (file) {
-        const existingDoc = await tx.document.findFirst({
+        // delete old certificate
+        await tx.document.deleteMany({
           where: {
-            candidateAchievementId: achievement.id,
-            userId,
-            isDeleted: false,
+            candidateEducationId: education.id,
           },
         });
 
-        if (existingDoc) {
-          await tx.document.update({
-            where: { id: existingDoc.id },
-            data: {
-              path: file.path,
-              size: file.size,
-              mimeType: file.mimetype,
-              name: file.originalname,
-              folderName: file.destination,
-            },
-          });
-        } else {
-          await tx.document.create({
-            data: {
-              type: 'ACHIEVEMENT',
-              name: file.originalname,
-              folderName: file.destination,
-              path: file.path,
-              size: file.size,
-              mimeType: file.mimetype,
-              userId,
-              candidateAchievementId: achievement.id,
-            },
-          });
-        }
+        await tx.document.create({
+          data: {
+            userId,
+            type: 'CERTIFICATE',
+            name: file.originalname,
+            folderName: file.fieldname,
+            path: file.path,
+            size: file.size,
+            mimeType: file.mimetype,
+            candidateEducationId: education.id,
+          },
+        });
       }
-
-      result.push(achievement);
     }
 
-    return result;
+    return finalEducations;
   });
+
+  return result;
 };
 
 
@@ -609,9 +500,6 @@ const createCandidateAchievement = async (
     return result;
   });
 };
-
-
-
 
 const me = async (user: TUserPayload) => {
   const result = await prisma.user.findUnique({
