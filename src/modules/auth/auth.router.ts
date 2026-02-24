@@ -1,4 +1,5 @@
 
+import { loginLimiter } from '../../lib/rateLimit/loginLimiter';
 import { auth } from '../../middlewares/auth';
 import { AuthGard } from '../../utils/constant/auth.Constant';
 import { AuthController } from './auth.controller';
@@ -11,7 +12,7 @@ const router = express.Router();
 
 ////////// Auth //////////
 router.post("/register", AuthController.register);
-router.post("/login", AuthController.login);
+router.post("/login", loginLimiter, AuthController.login);
 router.get("/verify-email", AuthController.verifyEmail);
 router.post('/oauth/google', AuthController.googleAuth)
 router.post("/forgot-password", AuthController.forgotPassword);

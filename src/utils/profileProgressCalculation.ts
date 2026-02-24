@@ -32,7 +32,7 @@ export const profileProgressCalculation = async (userId: string) => {
         signature: 0,
     };
 
-    if (user.candidatePersonal) breakdown.candidatePersonal = 10;
+    if (user.candidatePersonal) breakdown.candidatePersonal = 20;
     if (user.candidateEducations.length > 0) breakdown.candidateEducations = 10;
     if (user.candidateExperiences.length > 0) breakdown.candidateExperiences = 10;
     if (user.candidateAchievements.length > 0) breakdown.candidateAchievements = 10;
@@ -43,7 +43,7 @@ export const profileProgressCalculation = async (userId: string) => {
     const hasAvatar = user.documents.some(d => d.type === "AVATAR");
     const hasSignature = user.documents.some(d => d.type === "SIGNATURE");
 
-    if (hasResume) breakdown.resume = 15;
+    if (hasResume) breakdown.resume = 10;
     if (hasAvatar) breakdown.avatar = 10;
     if (hasSignature) breakdown.signature = 10;
 

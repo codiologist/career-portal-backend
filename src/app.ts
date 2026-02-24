@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import express, { Application } from 'express';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -8,8 +9,16 @@ import { RootRouter } from './routes/rootRouter';
 import { globalErrorHandler } from './middlewares/errorHandler';
 //import seed from './lib/seed';
 import path from 'path';
+import helmet from 'helmet';
+import { apiLimitet } from './lib/rateLimit/apiLimiter';
+import { prisma } from './config/prisma';
+
+
 
 const app: Application = express();
+
+app.use(helmet()); 
+app.use('/', apiLimitet);
 
 app.use(cookieParser());
 
@@ -29,7 +38,30 @@ app.use('/api/v1/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/api/v1', RootRouter);
 
 // Health check
-app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
+app.get('/api/health', async (req, res) => {
+  try {
+    // Optionally, check database or other critical services
+    const dbStatus = await prisma.$queryRaw`SELECT 1`; // Example for Prisma/DB health check
+
+    res.status(200).json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      services: {
+        database: dbStatus ? 'ok' : 'down',
+        // add other services here if needed
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Service Unavailable',
+      timestamp: new Date().toISOString(),
+      error: error.message,
+    });
+  }
+});
+
+
 
 // 404 and Error Handler
 app.use(notFound);
