@@ -2,6 +2,7 @@
 import { prisma } from '../../config/prisma';
 import { TUserPayload } from '../../types/user';
 import { AppError } from '../../utils/AppError';
+import { profileProgressCalculation } from '../../utils/profileProgressCalculation';
 import {
   TAchievementInput,
   TAddressInput,
@@ -64,7 +65,8 @@ const createCandidatePersonalService = async (
       user: true,
     },
   });
-  
+
+  await profileProgressCalculation(user?.id)
 
   return result;
 };
@@ -102,7 +104,7 @@ const createCandidateExperienceService = async (
       orderBy: { startDate: 'desc' },
     });
   });
-
+  await profileProgressCalculation(user?.id)
   return result;
 };
 
@@ -340,7 +342,7 @@ const createCandidateEducationService = async (
 
       result.push(education);
     }
-
+  await profileProgressCalculation(user?.id)
     return finalEducations;
   });
 
@@ -373,7 +375,7 @@ const createCandidateReference = async (
 
     return created;
   });
-
+  await profileProgressCalculation(user?.id)
   return result;
 };
 const createCandidateAddress = async (
@@ -409,7 +411,7 @@ const createCandidateAddress = async (
       data: addresses,
     });
   });
-
+  await profileProgressCalculation(user?.id)
   return result;
 };
 
@@ -642,6 +644,8 @@ const createCandidateAchievement = async (
 };
 
 const me = async (user: TUserPayload) => {
+
+
   const result = await prisma.user.findUnique({
     where: { email: user.email },
     select: {
@@ -821,14 +825,13 @@ const me = async (user: TUserPayload) => {
     },
   });
 
-  // const address = await prisma.address.findMany({
-  //   where: { userId: result?.id },
-  //   include: {
-  //     district: true
-  //   }
-  // });
+  if(!result) throw new AppError(500, "user not found")
+  const profileProgress = await profileProgressCalculation(result?.id)
 
-  return result;
+  console.log(profileProgress)
+
+
+  return {...result, profileProgress};
 };
 //////////////////////////////// Profile Services //////////////////////////////////////////////////
 
