@@ -11,9 +11,6 @@ import { verifyEmailTemplate } from '../../utils/emailTemplate/VerifyLink';
 import { googleOAuthClient } from '../../config/oauth';
 import axios from 'axios';
 
-
-
-
 /////////////////// Auth Services /////////////
 const register = async (payload: TUser) => {
   const salt = bcrypt.genSaltSync(
@@ -59,7 +56,7 @@ const register = async (payload: TUser) => {
 };
 
 const login = async (payload: TUser) => {
-  console.log(payload.recaptchaToken);
+  // console.log(payload.recaptchaToken);
 
   const secret = process.env.RECAPTCHA_SECRET_KEY;
 
@@ -74,7 +71,7 @@ const login = async (payload: TUser) => {
     },
   );
 
-  console.log(response.data);
+  // console.log(response.data);
 
   const result = await prisma.user.findUnique({
     where: { email: payload.email },
@@ -174,7 +171,7 @@ const verifyEmail = async (token: string) => {
     userId: string;
     id: string;
   };
-  console.log(decoded);
+  // console.log(decoded);
   const user = await prisma.user.findFirst({ where: { id: decoded.userId } });
   if (!user) {
     throw new AppError(404, 'User not found');
@@ -425,13 +422,7 @@ const changePassword = async (
   return {};
 };
 
-
-
-
-
 /////// Auth Services ////////
-
-
 
 export const AuthService = {
   register,

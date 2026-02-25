@@ -66,7 +66,7 @@ const createCandidatePersonalService = async (
     },
   });
 
-  await profileProgressCalculation(user?.id)
+  await profileProgressCalculation(user?.id);
 
   return result;
 };
@@ -104,7 +104,7 @@ const createCandidateExperienceService = async (
       orderBy: { startDate: 'desc' },
     });
   });
-  await profileProgressCalculation(user?.id)
+  await profileProgressCalculation(user?.id);
   return result;
 };
 
@@ -342,7 +342,7 @@ const createCandidateEducationService = async (
 
       result.push(education);
     }
-  await profileProgressCalculation(user?.id)
+    await profileProgressCalculation(user?.id);
     return finalEducations;
   });
 
@@ -375,7 +375,7 @@ const createCandidateReference = async (
 
     return created;
   });
-  await profileProgressCalculation(user?.id)
+  await profileProgressCalculation(user?.id);
   return result;
 };
 const createCandidateAddress = async (
@@ -411,11 +411,11 @@ const createCandidateAddress = async (
       data: addresses,
     });
   });
-  await profileProgressCalculation(user?.id)
+  await profileProgressCalculation(user?.id);
   return result;
 };
 
-//////// 
+////////
 // const createCandidateAchievement = async (
 //   payload: TAchievementInput[],
 //   files: Express.Multer.File[],
@@ -644,8 +644,6 @@ const createCandidateAchievement = async (
 };
 
 const me = async (user: TUserPayload) => {
-
-
   const result = await prisma.user.findUnique({
     where: { email: user.email },
     select: {
@@ -825,13 +823,12 @@ const me = async (user: TUserPayload) => {
     },
   });
 
-  if(!result) throw new AppError(500, "user not found")
-  const profileProgress = await profileProgressCalculation(result?.id)
+  if (!result) throw new AppError(500, 'user not found');
+  const profileProgress = await profileProgressCalculation(result?.id);
 
-  console.log(profileProgress)
+  // console.log(profileProgress)
 
-
-  return {...result, profileProgress};
+  return { ...result, profileProgress };
 };
 //////////////////////////////// Profile Services //////////////////////////////////////////////////
 
@@ -862,7 +859,7 @@ const getDivisionWithDistrictsAndUpazilas = async (payload: {
   try {
     const { districtId, divisionId, upazilaId } = payload;
 
-    console.log(payload);
+    // console.log(payload);
 
     // 1️⃣ No params → return all divisions
     if (!divisionId && !districtId && !upazilaId) {

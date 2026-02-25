@@ -38,7 +38,7 @@ const uploadAvater = async (file: TCustomFileMulter, user: TUserPayload) => {
     }),
   ]);
 
-  console.log(result);
+  // console.log(result);
 
   return result;
 };
@@ -72,7 +72,7 @@ const uploadResume = async (file: TCustomFileMulter, user: TUserPayload) => {
     }),
   ]);
 
-  console.log(result);
+  // console.log(result);
 
   return result;
 };
@@ -106,7 +106,7 @@ const uploadSignature = async (file: TCustomFileMulter, user: TUserPayload) => {
     }),
   ]);
 
-  console.log(result);
+  // console.log(result);
 
   return result;
 };
@@ -117,7 +117,7 @@ const uploadSDocument = async (
   payload: TDocumentPayloadSchema,
 ) => {
   // Assuming metadata is sent as a JSON string in the 'data' field
-  console.log('File:', payload);
+  // console.log('File:', payload);
 
   if (!file) {
     throw new AppError(400, 'No file uploaded');
@@ -171,7 +171,7 @@ const uploadSDocument = async (
     }
   });
 
-  console.log(result);
+  // console.log(result);
 
   return result;
 };

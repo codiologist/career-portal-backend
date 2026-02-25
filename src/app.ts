@@ -13,11 +13,9 @@ import helmet from 'helmet';
 import { apiLimitet } from './lib/rateLimit/apiLimiter';
 import { prisma } from './config/prisma';
 
-
-
 const app: Application = express();
 
-app.use(helmet()); 
+app.use(helmet());
 app.use('/', apiLimitet);
 
 app.use(cookieParser());
@@ -32,7 +30,15 @@ app.use(
 
 app.use(express.json());
 
-app.use('/api/v1/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use(
+  '/api/v1/uploads',
+  express.static(path.join(process.cwd(), 'uploads'), {
+    setHeaders: (res: import('http').ServerResponse) => {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    },
+  }),
+);
 
 // Routes
 app.use('/api/v1', RootRouter);
@@ -60,8 +66,6 @@ app.get('/api/health', async (req, res) => {
     });
   }
 });
-
-
 
 // 404 and Error Handler
 app.use(notFound);

@@ -38,7 +38,7 @@ export const profileProgressCalculation = async (userId: string) => {
   if (user.candidateAchievements.length > 0)
     breakdown.candidateAchievements = 10;
   if (user.candidateReferences.length > 0) breakdown.candidateReferences = 10;
-  if (user.addresses) breakdown.addresses = 10;
+  if (user.addresses.length > 0) breakdown.addresses = 10;
 
   const hasResume = user.documents.some((d) => d.type === 'RESUME');
   const hasAvatar = user.documents.some((d) => d.type === 'AVATAR');
@@ -60,7 +60,7 @@ export const profileProgressCalculation = async (userId: string) => {
 
   if (!user.candidatePersonal) missingFields.push('Personal Information');
 
-  if (!user.addresses) missingFields.push('Address');
+  if (user.addresses.length === 0) missingFields.push('Address');
 
   if (user.candidateEducations.length === 0) missingFields.push('Education');
 

@@ -8,15 +8,13 @@ const register = catchAsync(async (req, res) => {
 
   res.status(201).json({
     status: true,
-    message: "Registration successful. Please verify your email.",
-    data: result
-  })
-})
-
-
+    message: 'Registration successful. Please verify your email.',
+    data: result,
+  });
+});
 
 const login = catchAsync(async (req, res) => {
-  const { token } = await AuthService.login(req.body)
+  const { token } = await AuthService.login(req.body);
   const cookieOptions = {
     httpOnly: true,
     secure: true,
@@ -29,9 +27,8 @@ const login = catchAsync(async (req, res) => {
     status: true,
     message: 'User Login successfully',
     data: { token: token },
-  })
-})
-
+  });
+});
 
 const verifyEmail = catchAsync(async (req, res) => {
   const token = req.query.token as string;
@@ -68,7 +65,7 @@ const forgotPassword = catchAsync(async (req, res) => {
 const resetPassword = catchAsync(async (req, res) => {
   const result = await AuthService.resetPassword(req.body);
 
-  console.log(result);
+  // console.log(result);
   res.status(201).json({
     status: true,
     message: 'Your password reset successfully, please login',
@@ -81,7 +78,7 @@ const changePassword = catchAsync(async (req, res) => {
 
   const result = await AuthService.changePassword(req.body, user);
 
-  console.log(result);
+  // console.log(result);
   res.status(200).json({
     status: true,
     message: 'Your Password change Successfully',
