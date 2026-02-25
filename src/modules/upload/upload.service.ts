@@ -148,6 +148,7 @@ const uploadSDocument = async (
           path: file.path,
           size: file.size,
           mimeType: file.mimetype,
+          isDeleted: payload.isDeleted,
         },
       });
     } else {
@@ -164,6 +165,7 @@ const uploadSDocument = async (
           path: file.path,
           size: file.size,
           mimeType: file.mimetype,
+          isDeleted: payload.isDeleted,
         },
       });
     }

@@ -569,9 +569,9 @@ model BaseMunicipality {
 ////////////////////////////////////////////////////////////////////////  Profile Progress ////////////////////////////////////////////////////////////////////////
 
 model ProfileProgress {
-  id              String @id @default(uuid())
-  completionScore Int    @default(0) @map("completion_score")
-  isPossibleJobApplay Boolean @default(false) @map("is_possible_job_applay")
+  id                 String  @id @default(uuid())
+  completionScore    Int     @default(0) @map("completion_score")
+  isPossibleJobApply Boolean @default(false) @map("is_possible_job_applay")
 
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
